@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@theme {
+    --font-sans: "Montserrat", sans-serif;
+    --font-title: "Montserrat Alternates", sans-serif;
+    --font-hand: "Edu VIC WA NT Hand", cursive;
+}
+
+body {
+    font-family: var(--font-sans);
+}
+
