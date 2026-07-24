@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { authenticationService } from "../../services/AuthenticationService";
-import { useAuthError } from "../../hooks/useAuthError";
-import { AuthErrorAlert } from "../../components/AuthErrorAlert";
+import { GiCrossedSwords } from "react-icons/gi";
+import { authenticationService } from "@/auth/services/AuthenticationService";
+import { useAuthError } from "@/auth/hooks/useAuthError";
+import { AuthErrorAlert } from "@/auth/components/AuthErrorAlert";
+import { CharacterClassCarousel } from "@/auth/components/CharacterClassCarousel";
+import { ParticleBackground } from "@/auth/components/ParticleBackground";
+import { AuthCard } from "@/auth/components/AuthCard";
+import { AuthInput } from "@/auth/components/AuthInput";
+import { AuthLabel } from "@/auth/components/AuthLabel";
+import { InteractiveButton } from "@/auth/components/InteractiveButton";
 
 const PLAYER_TYPES = ["CABALLERO", "MAGO", "ARQUERO", "GLADIADOR", "ESPADACHIN"] as const;
 
@@ -38,9 +45,11 @@ export const RegisterPage = () => {
     register,
     handleSubmit,
     setError,
+    control,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { playerType: "CABALLERO" },
   });
 
   const { authError, handleAuthError, clearError } = useAuthError<RegisterFormData>(setError);
@@ -67,187 +76,164 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#000000] px-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#1F150C] p-8 shadow-xl">
-        <h1 className="text-center font-title text-4xl font-bold text-[#E1DCC9] mb-2">
-          Revenant
-        </h1>
-        <p className="text-center text-sm text-[#E1DCC9]/70 mb-8">
-          Create your legend
-        </p>
+    <div
+      className="min-h-screen flex items-center justify-center bg-[#000000] px-4"
+      style={{ background: 'radial-gradient(ellipse at center, rgba(31,21,12,0.15) 0%, transparent 70%), #000000' }}
+    >
+      <ParticleBackground />
 
-        <AuthErrorAlert error={authError} />
+      <div className="relative z-10 w-full max-w-[960px] mx-auto">
+        <AuthCard maxWidth="xl" className="max-w-[960px] w-full">
+          <div className="p-8">
+            <h1 className="text-center font-title text-4xl font-bold text-[#E1DCC9] mb-2 animate-[torchlight_3.5s_ease-in-out_infinite]">
+              Revenant
+            </h1>
+            <GiCrossedSwords className="mx-auto text-[#E1DCC9]/40" size={20} />
+            <p className="text-center font-hand text-sm text-[#E1DCC9]/70 mb-8 mt-2">
+              Elije tu destino
+            </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="mb-4">
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              autoComplete="username"
-              aria-invalid={errors.username ? "true" : "false"}
-              aria-describedby={errors.username ? "username-error" : undefined}
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              placeholder="Choose a username"
-              {...register("username")}
-            />
-            {errors.username && (
-              <p
-                id="username-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
+            <AuthErrorAlert error={authError} />
+
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Left column — form inputs (~45%) */}
+                <div className="w-full md:w-[45%]">
+                  <div className="mb-4">
+                    <AuthLabel htmlFor="username">
+                      Nombre de usuario
+                    </AuthLabel>
+                    <AuthInput
+                      id="username"
+                      type="text"
+                      autoComplete="username"
+                      aria-invalid={errors.username ? "true" : "false"}
+                      aria-describedby={errors.username ? "username-error" : undefined}
+                      placeholder="Choose a username"
+                      {...register("username")}
+                    />
+                    {errors.username && (
+                      <p
+                        id="username-error"
+                        role="alert"
+                        className="mt-1 text-xs text-red-300"
+                      >
+                        {errors.username.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mb-4">
+                    <AuthLabel htmlFor="email">
+                      Email
+                    </AuthLabel>
+                    <AuthInput
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      aria-invalid={errors.email ? "true" : "false"}
+                      aria-describedby={errors.email ? "email-error" : undefined}
+                      placeholder="Enter your email"
+                      {...register("email")}
+                    />
+                    {errors.email && (
+                      <p
+                        id="email-error"
+                        role="alert"
+                        className="mt-1 text-xs text-red-300"
+                      >
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mb-4">
+                    <AuthLabel htmlFor="password">
+                      Contraseña
+                    </AuthLabel>
+                    <AuthInput
+                      id="password"
+                      type="password"
+                      autoComplete="new-password"
+                      aria-invalid={errors.password ? "true" : "false"}
+                      aria-describedby={errors.password ? "password-error" : undefined}
+                      placeholder="Create a password"
+                      {...register("password")}
+                    />
+                    {errors.password && (
+                      <p
+                        id="password-error"
+                        role="alert"
+                        className="mt-1 text-xs text-red-300"
+                      >
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mb-4">
+                    <AuthLabel htmlFor="confirmPassword">
+                      Confirmar contraseña
+                    </AuthLabel>
+                    <AuthInput
+                      id="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      aria-invalid={errors.confirmPassword ? "true" : "false"}
+                      aria-describedby={
+                        errors.confirmPassword ? "confirmPassword-error" : undefined
+                      }
+                      placeholder="Repeat your password"
+                      {...register("confirmPassword")}
+                    />
+                    {errors.confirmPassword && (
+                      <p
+                        id="confirmPassword-error"
+                        role="alert"
+                        className="mt-1 text-xs text-red-300"
+                      >
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right column — character class carousel (~55%) */}
+                <div className="w-full md:w-[55%] flex items-center justify-center">
+                  <Controller
+                    name="playerType"
+                    control={control}
+                    render={({ field }) => (
+                      <CharacterClassCarousel
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.playerType?.message}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+
+              <InteractiveButton
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full min-h-[44px] mt-6 font-semibold"
               >
-                {errors.username.message}
-              </p>
-            )}
-          </div>
+                {isSubmitting ? "Creando..." : "Empieza tu viaje"}
+              </InteractiveButton>
+            </form>
 
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              aria-invalid={errors.email ? "true" : "false"}
-              aria-describedby={errors.email ? "email-error" : undefined}
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              placeholder="Enter your email"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p
-                id="email-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
+            <p className="mt-6 text-center text-sm text-[#E1DCC9]/70">
+              ¿Ya tienes una cuenta?{" "}
+              <Link
+                to="/"
+                className="inline-block min-h-[44px] leading-[44px] font-medium text-[#E1DCC9] hover:underline"
               >
-                {errors.email.message}
-              </p>
-            )}
+                Iniciar sesión
+              </Link>
+            </p>
           </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={errors.password ? "true" : "false"}
-              aria-describedby={errors.password ? "password-error" : undefined}
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              placeholder="Create a password"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p
-                id="password-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
-              >
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={errors.confirmPassword ? "true" : "false"}
-              aria-describedby={
-                errors.confirmPassword ? "confirmPassword-error" : undefined
-              }
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              placeholder="Repeat your password"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p
-                id="confirmPassword-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
-              >
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="playerType"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Player Type
-            </label>
-            <select
-              id="playerType"
-              aria-invalid={errors.playerType ? "true" : "false"}
-              aria-describedby={
-                errors.playerType ? "playerType-error" : undefined
-              }
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              defaultValue=""
-              {...register("playerType")}
-            >
-              <option value="" disabled>
-                Select your class
-              </option>
-              {PLAYER_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type.charAt(0) + type.slice(1).toLowerCase()}
-                </option>
-              ))}
-            </select>
-            {errors.playerType && (
-              <p
-                id="playerType-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
-              >
-                {errors.playerType.message}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-[#412D15] px-4 py-3 font-semibold text-[#E1DCC9] transition-colors hover:bg-[#E1DCC9] hover:text-[#000000] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "Creating..." : "Begin Your Journey"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-[#E1DCC9]/70">
-          Already an adventurer?{" "}
-          <Link
-            to="/"
-            className="font-medium text-[#E1DCC9] hover:underline"
-          >
-            Sign in
-          </Link>
-        </p>
+        </AuthCard>
       </div>
     </div>
   );

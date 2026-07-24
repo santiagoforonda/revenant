@@ -244,6 +244,8 @@ This section MUST contain a JSON code block.
 
 The JSON MUST include a non-empty `waves` array.
 
+Task IDs MUST use the format `"task-N"` where N matches the task number in the Tasks section.
+
 Example:
 
 ```json
@@ -252,18 +254,30 @@ Example:
     {
       "wave": 1,
       "tasks": [
-        "task-1"
+        "task-1",
+        "task-2"
       ]
     },
     {
       "wave": 2,
       "tasks": [
-        "task-2"
+        "task-3",
+        "task-4"
+      ]
+    },
+    {
+      "wave": 3,
+      "tasks": [
+        "task-5"
       ]
     }
   ]
 }
 ```
+
+Tasks within the same wave MAY be executed in parallel.
+
+Tasks in wave N depend on the completion of all tasks in wave N-1.
 
 The exact JSON schema must follow the Kiro specification format.
 
@@ -271,19 +285,78 @@ The exact JSON schema must follow the Kiro specification format.
 
 ## Tasks
 
-Tasks SHOULD be organized as checklists.
+Tasks MUST be numbered and follow the exact format below.
 
-Example:
+**Required format:**
 
-```markdown
-- [ ] Create AuthenticationService
-
-- [ ] Implement LoginPage
-
-- [ ] Implement RegisterPage
+```text
+- [ ] N. Task title
 ```
 
-Tasks SHOULD represent independent implementation units.
+Or for completed tasks:
+
+```text
+- [x] N. Task title
+```
+
+Where `N` is a sequential number starting at 1.
+
+**CRITICAL:** Tasks that do NOT follow this format will fail validation. The following formats are INVALID:
+
+```text
+- [ ] Task without number          ← INVALID (missing number)
+- [ ] Create something             ← INVALID (missing number)
+- [x] Do something                 ← INVALID (missing number)
+```
+
+**Sub-tasks:**
+
+Each task MAY include indented sub-tasks describing implementation steps.
+
+Sub-tasks are indented with 2 spaces and prefixed with a dash.
+
+**Complete example:**
+
+```markdown
+- [ ] 1. Register the WASD keyboard controls in the MainScene.
+
+  - Create cursor key bindings for W, A, S, D.
+
+---
+
+- [ ] 2. Process keyboard input during every update cycle.
+
+  - Read active keys each frame.
+  - Determine movement direction vector.
+
+---
+
+- [ ] 3. Implement player movement using Phaser Arcade Physics.
+
+  - Enable physics on the player body.
+  - Apply velocity based on input direction.
+  - Normalize diagonal movement.
+```
+
+**Rules:**
+
+- Each task MUST be separated by a `---` horizontal rule.
+- Tasks MUST be numbered sequentially (1, 2, 3...).
+- Task IDs in the dependency graph MUST use the format `"task-N"` (e.g., `"task-1"`, `"task-2"`).
+- Sub-tasks are optional but recommended for complex tasks.
+- Tasks SHOULD represent independent implementation units.
+
+---
+
+## Implementation Plan Heading
+
+The Implementation Plan section MUST use a level-1 heading:
+
+```markdown
+# Implementation Plan
+```
+
+Using `## Implementation Plan` will fail validation.
 
 ---
 

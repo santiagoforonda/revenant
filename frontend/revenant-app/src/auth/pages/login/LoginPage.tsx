@@ -4,9 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { GiCrossedSwords } from "react-icons/gi";
 import { useAuthStore } from "../../store/auth-store";
 import { useAuthError } from "../../hooks/useAuthError";
 import { AuthErrorAlert } from "../../components/AuthErrorAlert";
+import { ParticleBackground } from "@/auth/components/ParticleBackground";
+import { AuthCard } from "@/auth/components/AuthCard";
+import { AuthInput } from "@/auth/components/AuthInput";
+import { AuthLabel } from "@/auth/components/AuthLabel";
+import { InteractiveButton } from "@/auth/components/InteractiveButton";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -48,92 +54,94 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#000000] px-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#1F150C] p-8 shadow-xl">
-        <h1 className="text-center font-title text-4xl font-bold text-[#E1DCC9] mb-2">
-          Revenant
-        </h1>
-        <p className="text-center text-sm text-[#E1DCC9]/70 mb-8">
-          Enter the realm
-        </p>
+    <div
+      className="relative min-h-screen flex items-center justify-center bg-[#000000] px-4"
+      style={{ background: 'radial-gradient(ellipse at center, rgba(31,21,12,0.15) 0%, transparent 70%), #000000' }}
+    >
+      <ParticleBackground />
 
-        <AuthErrorAlert error={authError} />
+      <div className="relative z-10 w-full max-w-md">
+        <AuthCard maxWidth="md">
+          <div className="p-8">
+            <h1 className="text-center font-title text-4xl font-bold text-[#E1DCC9] mb-2 animate-[torchlight_3.5s_ease-in-out_infinite]">
+              Revenant
+            </h1>
+            <GiCrossedSwords className="mx-auto text-[#E1DCC9]/40" size={20} />
+            <p className="text-center font-hand text-sm text-[#E1DCC9]/70 mb-8 mt-2">
+              Entra al sueño
+            </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="mb-4">
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              autoComplete="username"
-              aria-invalid={errors.username ? "true" : "false"}
-              aria-describedby={errors.username ? "username-error" : undefined}
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              placeholder="Enter your username"
-              {...register("username")}
-            />
-            {errors.username && (
-              <p
-                id="username-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
+            <AuthErrorAlert error={authError} />
+
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <div className="mb-4">
+                <AuthLabel htmlFor="username" className="block text-sm">
+                  Nombre de usuario
+                </AuthLabel>
+                <AuthInput
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  aria-invalid={errors.username ? "true" : "false"}
+                  aria-describedby={errors.username ? "username-error" : undefined}
+                  placeholder="Enter your username"
+                  {...register("username")}
+                />
+                {errors.username && (
+                  <p
+                    id="username-error"
+                    role="alert"
+                    className="mt-1 text-xs text-red-300"
+                  >
+                    {errors.username.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mb-6">
+                <AuthLabel htmlFor="password" className="block text-sm">
+                  Contraseña
+                </AuthLabel>
+                <AuthInput
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={errors.password ? "true" : "false"}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  placeholder="Enter your password"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p
+                    id="password-error"
+                    role="alert"
+                    className="mt-1 text-xs text-red-300"
+                  >
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <InteractiveButton
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full min-h-[44px] px-4 py-3 font-semibold"
               >
-                {errors.username.message}
-              </p>
-            )}
-          </div>
+                {isSubmitting ? "Entrando..." : "Entra al mundo"}
+              </InteractiveButton>
+            </form>
 
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-[#E1DCC9] mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              aria-invalid={errors.password ? "true" : "false"}
-              aria-describedby={errors.password ? "password-error" : undefined}
-              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
-              placeholder="Enter your password"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p
-                id="password-error"
-                role="alert"
-                className="mt-1 text-xs text-red-300"
+            <p className="mt-6 text-center text-sm text-[#E1DCC9]/70">
+              ¿Nuevo aventurero?{" "}
+              <Link
+                to="/register"
+                className="inline-block min-h-[44px] leading-[44px] font-medium text-[#E1DCC9] hover:underline"
               >
-                {errors.password.message}
-              </p>
-            )}
+                Crea una cuenta
+              </Link>
+            </p>
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-[#412D15] px-4 py-3 font-semibold text-[#E1DCC9] transition-colors hover:bg-[#E1DCC9] hover:text-[#000000] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "Entering..." : "Enter the Realm"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-[#E1DCC9]/70">
-          New adventurer?{" "}
-          <Link
-            to="/register"
-            className="font-medium text-[#E1DCC9] hover:underline"
-          >
-            Create an account
-          </Link>
-        </p>
+        </AuthCard>
       </div>
     </div>
   );
