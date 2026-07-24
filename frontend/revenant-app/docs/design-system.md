@@ -30,12 +30,12 @@ Modern minimalist interfaces SHOULD be avoided when they conflict with the medie
 
 # Color Palette
 
-| Color | Hex | Usage |
-|--------|---------|---------------------------|
-| Primary | #321F28 | Main background, navigation bars, modal backgrounds |
-| Secondary | #734046 | Cards, panels, forms, secondary containers |
-| Accent | #A05344 | Primary buttons, active elements, selected items |
-| Highlight | #E79E4F | Hover states, rewards, gold, important actions |
+| Color | Hex | RGB | Usage |
+|--------|---------|-----------------|---------------------------|
+| Primary | #000000 | rgb(0, 0, 0) | Main background, navigation bars, modal backgrounds |
+| Secondary | #1F150C | rgb(31, 21, 12) | Cards, panels, forms, secondary containers |
+| Accent | #412D15 | rgb(65, 45, 21) | Primary buttons, active elements, selected items |
+| Highlight | #E1DCC9 | rgb(225, 220, 201) | Hover states, text, rewards, important actions |
 ---
 
 # Color Usage
@@ -45,7 +45,13 @@ Modern minimalist interfaces SHOULD be avoided when they conflict with the medie
 Hex
 
 ```text
-#321F28
+#000000
+```
+
+RGB
+
+```text
+rgb(0, 0, 0)
 ```
 
 Purpose
@@ -63,7 +69,13 @@ Purpose
 Hex
 
 ```text
-#734046
+#1F150C
+```
+
+RGB
+
+```text
+rgb(31, 21, 12)
 ```
 
 Purpose
@@ -80,7 +92,13 @@ Purpose
 Hex
 
 ```text
-#A05344
+#412D15
+```
+
+RGB
+
+```text
+rgb(65, 45, 21)
 ```
 
 Purpose
@@ -97,13 +115,19 @@ Purpose
 Hex
 
 ```text
-#E79E4F
+#E1DCC9
+```
+
+RGB
+
+```text
+rgb(225, 220, 201)
 ```
 
 Purpose
 
 - Hover states
-- Gold
+- Text color (primary readable text)
 - Rewards
 - Important actions
 - Rare items

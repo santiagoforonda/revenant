@@ -4,6 +4,7 @@ import Phaser from "phaser";
 import { useAuthStore } from "../../auth/store/auth-store";
 import { eventBus } from "../events";
 import { bootstrapService } from "../services/BootstrapService";
+import { MainScene } from "../scenes/MainScene";
 
 export const GamePage = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export const GamePage = () => {
       parent: containerRef.current,
       width: 800,
       height: 600,
-      backgroundColor: "#321F28",
+      backgroundColor: "#000000",
       physics: {
         default: "arcade",
         arcade: {
@@ -51,7 +52,7 @@ export const GamePage = () => {
           debug: false,
         },
       },
-      scene: [],
+      scene: [MainScene],
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -79,7 +80,7 @@ export const GamePage = () => {
 
   return (
     <div
-      className="w-screen h-screen bg-[#321F28] flex items-center justify-center"
+      className="w-screen h-screen bg-[#000000] flex items-center justify-center"
       aria-label="Game area"
     >
       <div ref={containerRef} className="w-full h-full" />

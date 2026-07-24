@@ -48,12 +48,12 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#321F28] px-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#734046] p-8 shadow-xl">
-        <h1 className="text-center font-title text-4xl font-bold text-[#E79E4F] mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-[#000000] px-4">
+      <div className="w-full max-w-md rounded-2xl bg-[#1F150C] p-8 shadow-xl">
+        <h1 className="text-center font-title text-4xl font-bold text-[#E1DCC9] mb-2">
           Revenant
         </h1>
-        <p className="text-center text-sm text-gray-300 mb-8">
+        <p className="text-center text-sm text-[#E1DCC9]/70 mb-8">
           Enter the realm
         </p>
 
@@ -63,7 +63,7 @@ export const LoginPage = () => {
           <div className="mb-4">
             <label
               htmlFor="username"
-              className="block text-sm font-medium text-gray-200 mb-1"
+              className="block text-sm font-medium text-[#E1DCC9] mb-1"
             >
               Username
             </label>
@@ -73,7 +73,7 @@ export const LoginPage = () => {
               autoComplete="username"
               aria-invalid={errors.username ? "true" : "false"}
               aria-describedby={errors.username ? "username-error" : undefined}
-              className="w-full rounded-lg border border-[#A05344] bg-[#321F28] px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E79E4F]"
+              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
               placeholder="Enter your username"
               {...register("username")}
             />
@@ -91,7 +91,7 @@ export const LoginPage = () => {
           <div className="mb-6">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-200 mb-1"
+              className="block text-sm font-medium text-[#E1DCC9] mb-1"
             >
               Password
             </label>
@@ -101,7 +101,7 @@ export const LoginPage = () => {
               autoComplete="current-password"
               aria-invalid={errors.password ? "true" : "false"}
               aria-describedby={errors.password ? "password-error" : undefined}
-              className="w-full rounded-lg border border-[#A05344] bg-[#321F28] px-4 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E79E4F]"
+              className="w-full rounded-lg border border-[#412D15] bg-[#000000] px-4 py-2 text-[#E1DCC9] placeholder-[#E1DCC9]/40 focus:outline-none focus:ring-2 focus:ring-[#E1DCC9]"
               placeholder="Enter your password"
               {...register("password")}
             />
@@ -119,17 +119,17 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-[#A05344] px-4 py-3 font-semibold text-white transition-colors hover:bg-[#E79E4F] hover:text-[#321F28] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-lg bg-[#412D15] px-4 py-3 font-semibold text-[#E1DCC9] transition-colors hover:bg-[#E1DCC9] hover:text-[#000000] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Entering..." : "Enter the Realm"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-300">
+        <p className="mt-6 text-center text-sm text-[#E1DCC9]/70">
           New adventurer?{" "}
           <Link
             to="/register"
-            className="font-medium text-[#E79E4F] hover:underline"
+            className="font-medium text-[#E1DCC9] hover:underline"
           >
             Create an account
           </Link>
