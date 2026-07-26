@@ -15,7 +15,7 @@ import { AuthLabel } from "@/auth/components/AuthLabel";
 import { InteractiveButton } from "@/auth/components/InteractiveButton";
 import { AnimatedRoute, useAnimatedRoute } from "@/auth/components/AnimatedRoute";
 
-const PLAYER_TYPES = ["CABALLERO", "MAGO", "ARQUERO", "GLADIADOR", "ESPADACHIN"] as const;
+const PLAYER_TYPES = ["CABALLERO", "MAGO", "GLADIADOR", "ESPADACHIN"] as const;
 
 const registerSchema = z
   .object({

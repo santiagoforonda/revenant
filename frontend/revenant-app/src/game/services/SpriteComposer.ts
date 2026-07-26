@@ -14,8 +14,41 @@ const WALK_FRAME_RATE = 8;
 /** Idle animation frame rate */
 const IDLE_FRAME_RATE = 1;
 
+/** Attack animation frame rate */
+const ATTACK_FRAME_RATE = 10;
+
+/** Number of columns per row in the body_attack spritesheet (default: 6-col classes) */
+const ATTACK_COLS_PER_ROW = 6;
+
+/** Number of columns per row for mago's attack spritesheets (8 cols) */
+const MAGO_ATTACK_COLS_PER_ROW = 8;
+
 /** All four directions for iteration */
 const DIRECTIONS: PlayerDirection[] = ["up", "down", "left", "right"];
+
+/**
+ * Frame ranges for body attack spritesheet.
+ * Row 0 = North/Up, Row 1 = Left, Row 2 = South/Down, Row 3 = Right
+ * 6 frames per direction. Used by gladiador, knight, espadachin.
+ */
+const ATTACK_DIRECTION_FRAMES: Record<PlayerDirection, { start: number; end: number }> = {
+  up:    { start: 0 * ATTACK_COLS_PER_ROW, end: 0 * ATTACK_COLS_PER_ROW + 5 },
+  left:  { start: 1 * ATTACK_COLS_PER_ROW, end: 1 * ATTACK_COLS_PER_ROW + 5 },
+  down:  { start: 2 * ATTACK_COLS_PER_ROW, end: 2 * ATTACK_COLS_PER_ROW + 5 },
+  right: { start: 3 * ATTACK_COLS_PER_ROW, end: 3 * ATTACK_COLS_PER_ROW + 5 },
+};
+
+/**
+ * Frame ranges for mago's attack spritesheets (8 cols × 4 rows).
+ * Row 0 = North/Up, Row 1 = Left, Row 2 = South/Down, Row 3 = Right
+ * 8 frames per direction.
+ */
+const MAGO_ATTACK_DIRECTION_FRAMES: Record<PlayerDirection, { start: number; end: number }> = {
+  up:    { start: 0 * MAGO_ATTACK_COLS_PER_ROW, end: 0 * MAGO_ATTACK_COLS_PER_ROW + 7 },
+  left:  { start: 1 * MAGO_ATTACK_COLS_PER_ROW, end: 1 * MAGO_ATTACK_COLS_PER_ROW + 7 },
+  down:  { start: 2 * MAGO_ATTACK_COLS_PER_ROW, end: 2 * MAGO_ATTACK_COLS_PER_ROW + 7 },
+  right: { start: 3 * MAGO_ATTACK_COLS_PER_ROW, end: 3 * MAGO_ATTACK_COLS_PER_ROW + 7 },
+};
 
 /** Frame ranges for body, legs, torso (9 cols × 4 rows = 576x256, 64x64 frames) */
 const BODY_DIRECTION_FRAMES: Record<PlayerDirection, { start: number; end: number; idle: number }> = {
@@ -209,6 +242,142 @@ export class DefaultSpriteComposer implements SpriteComposer {
       const frameData = this.getFrameDataForLayer(layer, classId);
       this.registerLayerAnimations(anims, classId, layer, assetKey, frameData);
     }
+
+    // Select the correct attack frame layout based on class
+    // Mago uses 8 cols × 4 rows, all other classes use 6 cols × 4 rows
+    const attackFrameData = classId === "mago" ? MAGO_ATTACK_DIRECTION_FRAMES : ATTACK_DIRECTION_FRAMES;
+
+    // Register body attack animations using the attack spritesheet
+    const bodyAttackTextureKey = `${classId}-body-attack`;
+    if (scene.textures.exists(bodyAttackTextureKey)) {
+      for (const direction of DIRECTIONS) {
+        const attackKey = `${classId}-body-attack-${direction}`;
+        if (!anims.exists(attackKey)) {
+          const frames = attackFrameData[direction];
+          anims.create({
+            key: attackKey,
+            frames: anims.generateFrameNumbers(bodyAttackTextureKey, {
+              start: frames.start,
+              end: frames.end,
+            }),
+            frameRate: ATTACK_FRAME_RATE,
+            repeat: 0,
+          });
+        }
+      }
+    }
+
+    // Register weapon attack animations if the weapon attack spritesheet is loaded
+    // (e.g., gladiador Slash.png uses same row layout as body attack)
+    const weaponAttackKey = `${classId}-weapon-attack`;
+    if (scene.textures.exists(weaponAttackKey)) {
+      for (const direction of DIRECTIONS) {
+        const animKey = `${classId}-weapon-attack-${direction}`;
+        if (!anims.exists(animKey)) {
+          const frames = attackFrameData[direction];
+          anims.create({
+            key: animKey,
+            frames: anims.generateFrameNumbers(weaponAttackKey, {
+              start: frames.start,
+              end: frames.end,
+            }),
+            frameRate: ATTACK_FRAME_RATE,
+            repeat: 0,
+          });
+        }
+      }
+    }
+
+    // Register attack animations for feet, legs, torso, helmet layers if spritesheets are loaded
+    const attackLayers = ["feet", "legs", "torso", "helmet"] as const;
+    for (const layer of attackLayers) {
+      const layerAttackTextureKey = `${classId}-${layer}-attack`;
+      if (scene.textures.exists(layerAttackTextureKey)) {
+        for (const direction of DIRECTIONS) {
+          const animKey = `${classId}-${layer}-attack-${direction}`;
+          if (!anims.exists(animKey)) {
+            const frames = attackFrameData[direction];
+            anims.create({
+              key: animKey,
+              frames: anims.generateFrameNumbers(layerAttackTextureKey, {
+                start: frames.start,
+                end: frames.end,
+              }),
+              frameRate: ATTACK_FRAME_RATE,
+              repeat: 0,
+            });
+          }
+        }
+      }
+    }
+
+    // Espadachin: legs and torso attack frames are in rows 12-15 of the same spritesheet (13 cols)
+    // Row 12 = up, Row 13 = left, Row 14 = down, Row 15 = right (9 frames each)
+    if (classId === "espadachin") {
+      const espadachinAttackRows: Record<PlayerDirection, { start: number; end: number }> = {
+        up:    { start: 12 * 13, end: 12 * 13 + 8 },
+        left:  { start: 13 * 13, end: 13 * 13 + 8 },
+        down:  { start: 14 * 13, end: 14 * 13 + 8 },
+        right: { start: 15 * 13, end: 15 * 13 + 8 },
+      };
+
+      // Register legs attack using existing espadachin-legs texture
+      if (scene.textures.exists(`${classId}-legs`)) {
+        for (const direction of DIRECTIONS) {
+          const animKey = `${classId}-legs-attack-${direction}`;
+          if (!anims.exists(animKey)) {
+            const frames = espadachinAttackRows[direction];
+            anims.create({
+              key: animKey,
+              frames: anims.generateFrameNumbers(`${classId}-legs`, {
+                start: frames.start,
+                end: frames.end,
+              }),
+              frameRate: ATTACK_FRAME_RATE,
+              repeat: 0,
+            });
+          }
+        }
+      }
+
+      // Register torso attack using existing espadachin-torso texture
+      if (scene.textures.exists(`${classId}-torso`)) {
+        for (const direction of DIRECTIONS) {
+          const animKey = `${classId}-torso-attack-${direction}`;
+          if (!anims.exists(animKey)) {
+            const frames = espadachinAttackRows[direction];
+            anims.create({
+              key: animKey,
+              frames: anims.generateFrameNumbers(`${classId}-torso`, {
+                start: frames.start,
+                end: frames.end,
+              }),
+              frameRate: ATTACK_FRAME_RATE,
+              repeat: 0,
+            });
+          }
+        }
+      }
+
+      // Register helmet attack using existing espadachin-helmet texture (hair.png, rows 12-15)
+      if (scene.textures.exists(`${classId}-helmet`)) {
+        for (const direction of DIRECTIONS) {
+          const animKey = `${classId}-helmet-attack-${direction}`;
+          if (!anims.exists(animKey)) {
+            const frames = espadachinAttackRows[direction];
+            anims.create({
+              key: animKey,
+              frames: anims.generateFrameNumbers(`${classId}-helmet`, {
+                start: frames.start,
+                end: frames.end,
+              }),
+              frameRate: ATTACK_FRAME_RATE,
+              repeat: 0,
+            });
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -320,12 +489,18 @@ export class DefaultSpriteComposer implements SpriteComposer {
 
     // Weapon and shield positions vary by direction
     if (sprites.weapon) {
-      if (direction === "up") {
+      // Skip visibility override if weapon is in attack animation
+      const isAttacking = sprites.weapon.getData("isAttacking") === true;
+
+      if (!isAttacking && direction === "up") {
         sprites.weapon.setVisible(false);
       } else {
         sprites.weapon.setVisible(true);
         if (direction === "down") {
-          sprites.weapon.setPosition(x - 21, y);
+          // During attack animation facing south, offset weapon to the right.
+          // Mago's weapon attack frames are larger (192x192), so it needs a bigger offset.
+          const offsetX = isAttacking ? -2 : -21;
+          sprites.weapon.setPosition(x + offsetX, y);
         } else {
           sprites.weapon.setPosition(x, y);
         }
@@ -377,18 +552,28 @@ export class DefaultSpriteComposer implements SpriteComposer {
 
     // Equipment layers
     if (sprites.feet) {
-      sprites.feet.play(`${classId}-feet-${stateKey}-${direction}`);
+      if (sprites.feet.getData("isAttacking") !== true) {
+        sprites.feet.play(`${classId}-feet-${stateKey}-${direction}`);
+      }
     }
     if (sprites.legs) {
-      sprites.legs.play(`${classId}-legs-${stateKey}-${direction}`);
+      if (sprites.legs.getData("isAttacking") !== true) {
+        sprites.legs.play(`${classId}-legs-${stateKey}-${direction}`);
+      }
     }
     if (sprites.torso) {
-      sprites.torso.play(`${classId}-torso-${stateKey}-${direction}`);
+      if (sprites.torso.getData("isAttacking") !== true) {
+        sprites.torso.play(`${classId}-torso-${stateKey}-${direction}`);
+      }
     }
     if (sprites.weapon) {
-      // Static weapon — only change frame based on direction, no animation
-      const weaponFrameData = this.getFrameDataForLayer("weapon", classId);
-      sprites.weapon.setFrame(weaponFrameData[direction].idle);
+      // Skip frame override if weapon is currently in attack animation
+      const isAttacking = sprites.weapon.getData("isAttacking") === true;
+      if (!isAttacking) {
+        // Static weapon — only change frame based on direction, no animation
+        const weaponFrameData = this.getFrameDataForLayer("weapon", classId);
+        sprites.weapon.setFrame(weaponFrameData[direction].idle);
+      }
     }
     if (sprites.shield) {
       sprites.shield.play(`${classId}-shield-${stateKey}-${direction}`);
@@ -396,13 +581,15 @@ export class DefaultSpriteComposer implements SpriteComposer {
 
     // Helmet — depends on helmetType
     if (sprites.helmet) {
-      if (config.helmetType === "directional") {
-        // Directional helmet: swap texture per direction
-        const suffix = DIRECTION_HELMET_SUFFIX[direction];
-        sprites.helmet.setTexture(`${classId}-helmet-${suffix}`);
-      } else {
-        // Spritesheet helmet: play animation like other layers
-        sprites.helmet.play(`${classId}-helmet-${stateKey}-${direction}`);
+      if (sprites.helmet.getData("isAttacking") !== true) {
+        if (config.helmetType === "directional") {
+          // Directional helmet: swap texture per direction
+          const suffix = DIRECTION_HELMET_SUFFIX[direction];
+          sprites.helmet.setTexture(`${classId}-helmet-${suffix}`);
+        } else {
+          // Spritesheet helmet: play animation like other layers
+          sprites.helmet.play(`${classId}-helmet-${stateKey}-${direction}`);
+        }
       }
     }
   }

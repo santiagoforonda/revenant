@@ -58,6 +58,7 @@ export class HudManager {
   private maxHealth: number = 100;
   private currentExperience: number = 0;
   private maxExperience: number = 100;
+  private destroyed: boolean = false;
 
   // Bound listener for proper cleanup
   private readonly onPlayerStatsUpdated = (data: PlayerStatsPayload): void => {
@@ -86,6 +87,7 @@ export class HudManager {
     // The main camera keeps its zoom for gameplay; HUD renders at 1:1 scale.
     this.hudCamera = this.scene.cameras.add(0, 0, undefined, undefined, false, "hudCamera");
     this.hudCamera.setScroll(0, 0);
+    this.hudCamera.setZoom(1);
 
     const gameWidth = this.scene.scale.width;
     const centerY = HudManager.ROW_HEIGHT / 2;
@@ -255,8 +257,27 @@ export class HudManager {
       this.logoutButton,
     ];
 
-    // Main camera ignores HUD — only the HUD camera renders them.
+    // --- Camera visibility setup ---
+    // Main camera ignores HUD elements (only game world is rendered by main camera).
     this.scene.cameras.main.ignore(this.hudElements);
+
+    // HUD camera ignores ALL existing game objects except HUD elements.
+    // This prevents the HUD camera from rendering the game world
+    // (which would show an unzoomed, non-following duplicate of the scene).
+    const nonHudElements = this.scene.children.list.filter(
+      (child) => !this.hudElements.includes(child)
+    );
+    if (nonHudElements.length > 0) {
+      this.hudCamera.ignore(nonHudElements);
+    }
+
+    // Listen for new game objects added to the scene AFTER HUD creation.
+    // Any non-HUD object added later must also be ignored by the HUD camera.
+    this.scene.events.on("addedtoscene", (gameObject: Phaser.GameObjects.GameObject) => {
+      if (!this.hudElements.includes(gameObject)) {
+        this.hudCamera.ignore(gameObject);
+      }
+    });
 
     // Subscribe to player stats updates for runtime synchronization
     eventBus.on("PLAYER_STATS_UPDATED", this.onPlayerStatsUpdated);
@@ -267,6 +288,8 @@ export class HudManager {
    * Initializes all displayed values at once.
    */
   setPlayerData(data: LoginResponse): void {
+    if (this.destroyed) return;
+
     this.usernameText.setText(data.username);
     this.classText.setText(this.formatPlayerType(data.typePlayer));
     this.levelText.setText(`Lv. ${data.level}`);
@@ -350,6 +373,23 @@ export class HudManager {
   }
 
   /**
+   * Returns the dedicated HUD camera for use by other HUD components.
+   */
+  getHudCamera(): Phaser.Cameras.Scene2D.Camera {
+    return this.hudCamera;
+  }
+
+  /**
+   * Registers an external game object as a HUD element.
+   * This prevents the HUD camera's addedtoscene listener from ignoring it.
+   * Used by external HUD components (e.g., EnemyHealthBarHud) that create
+   * game objects after HudManager initialization.
+   */
+  registerHudElement(gameObject: Phaser.GameObjects.GameObject): void {
+    this.hudElements.push(gameObject);
+  }
+
+  /**
    * Per-frame update. Placeholder for future animations or time-based HUD updates.
    */
   update(): void {
@@ -360,7 +400,9 @@ export class HudManager {
    * Destroys all HUD elements and removes them from the scene.
    */
   destroy(): void {
+    this.destroyed = true;
     eventBus.off("PLAYER_STATS_UPDATED", this.onPlayerStatsUpdated);
+    this.scene.events.off("addedtoscene");
     for (const element of this.hudElements) {
       element.destroy();
     }
@@ -372,6 +414,8 @@ export class HudManager {
    * Refreshes the health bar fill based on current/max ratio.
    */
   private updateHealthBar(): void {
+    if (this.destroyed || !this.healthBarFill) return;
+
     const ratio = this.maxHealth > 0
       ? Math.max(0, Math.min(1, this.currentHealth / this.maxHealth))
       : 0;
@@ -394,6 +438,8 @@ export class HudManager {
    * Refreshes the experience bar fill based on current/max ratio.
    */
   private updateExperienceBar(): void {
+    if (this.destroyed || !this.expBarFill) return;
+
     const ratio = this.maxExperience > 0
       ? Math.max(0, Math.min(1, this.currentExperience / this.maxExperience))
       : 0;

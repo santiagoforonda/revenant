@@ -106,6 +106,34 @@ export class Player {
   }
 
   /**
+   * Returns the weapon layer sprite, or null if the class has no weapon.
+   */
+  getWeaponSprite(): Phaser.GameObjects.Sprite | null {
+    return this.sprites.weapon;
+  }
+
+  /**
+   * Returns the feet layer sprite, or null if the class has no feet.
+   */
+  getFeetSprite(): Phaser.GameObjects.Sprite | null {
+    return this.sprites.feet;
+  }
+
+  /**
+   * Returns the legs layer sprite, or null if the class has no legs.
+   */
+  getLegsSprite(): Phaser.GameObjects.Sprite | null {
+    return this.sprites.legs;
+  }
+
+  /**
+   * Returns the torso layer sprite, or null if the class has no torso.
+   */
+  getTorsoSprite(): Phaser.GameObjects.Sprite | null {
+    return this.sprites.torso;
+  }
+
+  /**
    * Returns the underlying body sprite for external coordination (e.g. camera follow).
    */
   getSprite(): Phaser.Physics.Arcade.Sprite {

@@ -1,6 +1,7 @@
 import type { LoginResponse } from "../../auth/interfaces/auth-response";
 import { eventBus } from "../events";
 import type { ApiErrorPayload } from "../events";
+import { npcService } from "./NpcService";
 
 /**
  * BootstrapService manages the game initialization lifecycle.
@@ -25,18 +26,9 @@ class BootstrapService {
     try {
       console.log("[BootstrapService] Bootstrap started for user:", userData.username);
 
-      // Future: parallel load of required resources
-      // await Promise.all([
-      //   this.loadPlayer(userData),
-      //   this.loadCurrentMap(userData.mapId),
-      //   this.loadEnemies(userData.mapId),
-      //   this.loadNPCs(userData.mapId),
-      //   this.loadStores(userData.mapId),
-      //   this.loadInventory(),
-      // ]);
-
-      // For now, the LoginResponse already contains initial player data.
-      // Resource loading will be implemented when APIs are available.
+      // Fetch NPC data for the user's current map and emit through Event Bus.
+      // NPCs are non-critical — failure is logged but does not block bootstrap.
+      await this.loadNpcs(userData.mapId);
 
       console.log("[BootstrapService] Bootstrap completed successfully");
       eventBus.emit("GAME_READY");
@@ -49,6 +41,26 @@ class BootstrapService {
 
       console.error("[BootstrapService] Bootstrap failed:", errorPayload.message);
       eventBus.emit("API_ERROR", errorPayload);
+    }
+  }
+
+  /**
+   * Loads NPC data for the given map and emits it through the Event Bus.
+   * NPCs are non-critical — if the fetch fails, a warning is logged
+   * but the bootstrap continues.
+   *
+   * @param mapId - The map identifier to fetch NPCs for.
+   */
+  private async loadNpcs(mapId: number): Promise<void> {
+    const npcs = await npcService.getNpcsByMap(mapId);
+
+    if (npcs && npcs.length > 0) {
+      eventBus.emit("NPC_DATA_LOADED", npcs);
+      console.log(`[BootstrapService] Emitted NPC_DATA_LOADED with ${npcs.length} NPCs`);
+    } else if (npcs && npcs.length === 0) {
+      console.log("[BootstrapService] No NPCs found for current map");
+    } else {
+      console.warn("[BootstrapService] Failed to load NPC data, continuing without NPCs");
     }
   }
 }

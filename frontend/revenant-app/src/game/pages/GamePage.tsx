@@ -20,6 +20,8 @@ export const GamePage = () => {
       gameRef.current.destroy(true);
       gameRef.current = null;
     }
+    // Clear all EventBus listeners to prevent stale references from destroyed scenes
+    eventBus.removeAllListeners();
     navigate("/", { replace: true });
   }, [navigate]);
 
@@ -28,6 +30,8 @@ export const GamePage = () => {
       gameRef.current.destroy(true);
       gameRef.current = null;
     }
+    // Clear all EventBus listeners to prevent stale references from destroyed scenes
+    eventBus.removeAllListeners();
     logout();
     navigate("/", { replace: true });
   }, [logout, navigate]);
@@ -98,6 +102,8 @@ export const GamePage = () => {
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
+      // Clear all EventBus listeners on unmount to prevent stale references
+      eventBus.removeAllListeners();
     };
   }, [isAuthenticated, navigate, user]);
 

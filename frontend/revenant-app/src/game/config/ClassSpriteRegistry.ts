@@ -45,10 +45,10 @@ export const CLASS_SPRITE_REGISTRY: Record<PlayerClass, ClassSpriteConfig> = {
       legs: "knight-legs",
       torso: "knight-torso",
       weapon: "knight-weapon",
-      shield: "knight-shield",
+      shield: null,
       helmet: "knight-helmet",
     },
-    helmetType: "directional",
+    helmetType: "spritesheet",
   },
   [PlayerClass.Mago]: {
     classId: PlayerClass.Mago,
@@ -84,7 +84,7 @@ export const CLASS_SPRITE_REGISTRY: Record<PlayerClass, ClassSpriteConfig> = {
       shield: null,
       helmet: "gladiador-helmet",
     },
-    helmetType: "directional",
+    helmetType: "spritesheet",
   },
   [PlayerClass.Arquero]: {
     classId: PlayerClass.Arquero,

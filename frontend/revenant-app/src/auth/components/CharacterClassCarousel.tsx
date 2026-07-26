@@ -5,7 +5,6 @@ import { useReducedMotion } from "@/auth/hooks/useReducedMotion";
 
 import knightImg from "../../assets/characters/knight.png";
 import magoImg from "../../assets/characters/mago.png";
-import arqueroImg from "../../assets/characters/arquero.png";
 import gladiadorImg from "../../assets/characters/gladiador.png";
 import espadacinImg from "../../assets/characters/espadachin.png";
 
@@ -18,7 +17,6 @@ type CharacterClass = {
 const CHARACTER_CLASSES: CharacterClass[] = [
   { id: "CABALLERO", label: "Caballero", imageSrc: knightImg },
   { id: "MAGO", label: "Mago", imageSrc: magoImg },
-  { id: "ARQUERO", label: "Arquero", imageSrc: arqueroImg },
   { id: "GLADIADOR", label: "Gladiador", imageSrc: gladiadorImg },
   { id: "ESPADACHIN", label: "Espadachín", imageSrc: espadacinImg },
 ];

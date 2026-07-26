@@ -1,5 +1,9 @@
 import type { LoginResponse } from "../../auth/interfaces/auth-response";
 import type { PlayerClass } from "../config/ClassSpriteRegistry";
+import type { NpcDto } from "../interfaces/NpcResponse";
+import type { AttackRequest } from "../interfaces/AttackRequest";
+import type { CombatResolvedEvent, EnemyDefeatedEvent } from "../interfaces/CombatEvents";
+import type { EnemyRemovedEvent } from "../interfaces/EnemyRemovedEvent";
 
 export type ApiErrorPayload = {
   statusCode: number;
@@ -24,6 +28,11 @@ export type PlayerStatsPayload = {
   level?: number;
 };
 
+export type NpcDialoguePayload = {
+  npcName: string;
+  phrase: string | null;
+};
+
 export type EventBusMap = {
   GAME_INITIALIZED: LoginResponse;
   GAME_READY: void;
@@ -33,6 +42,12 @@ export type EventBusMap = {
   CLASS_CHANGE_SUCCESS: ClassChangeSuccessPayload;
   PLAYER_STATS_UPDATED: PlayerStatsPayload;
   LOGOUT_REQUESTED: void;
+  NPC_DATA_LOADED: NpcDto[];
+  NPC_DIALOGUE: NpcDialoguePayload;
+  ATTACK_REQUEST: AttackRequest;
+  COMBAT_RESOLVED: CombatResolvedEvent;
+  ENEMY_DEFEATED: EnemyDefeatedEvent;
+  ENEMY_REMOVED: EnemyRemovedEvent;
 };
 
 export type EventName = keyof EventBusMap;

@@ -31,6 +31,7 @@ export class Enemy {
   private readonly enemyType: EnemyType;
   private state: EnemyAnimationState = "idle";
   private direction: EnemyDirection = "down";
+  private dead: boolean = false;
 
   /**
    * Creates an Enemy entity.
@@ -55,7 +56,7 @@ export class Enemy {
     this.enemyType = enemyType;
 
     this.sprite = this.scene.physics.add.sprite(x, y, spriteKey, 13);
-    this.sprite.setDepth(2);
+    this.sprite.setDepth(1);
     this.sprite.setImmovable(true);
 
     // Initialize the SpriteComposer — delegates all animation to EnemyAnimationController
@@ -135,6 +136,13 @@ export class Enemy {
   }
 
   /**
+   * Returns the enemy's unique ID from backend data.
+   */
+  getId(): number {
+    return this.stats.id;
+  }
+
+  /**
    * Returns the enemy's name from backend data.
    */
   getName(): string {
@@ -182,5 +190,74 @@ export class Enemy {
    */
   getCurrentAnimationKey(): string {
     return this.spriteComposer.getCurrentAnimationKey();
+  }
+
+  /**
+   * Returns whether this enemy is dead.
+   *
+   * Dead enemies should be skipped by AI, patrol, detection, chase,
+   * and combat systems. This method allows external systems to check
+   * whether the enemy should still participate in gameplay.
+   */
+  isDead(): boolean {
+    return this.dead;
+  }
+
+  /**
+   * Disables the enemy for the death sequence.
+   *
+   * This method:
+   * - Marks the enemy as dead so AI/combat systems skip it.
+   * - Zeroes velocity to stop all movement.
+   * - Disables the physics body to prevent collisions.
+   * - Sets the animation state to idle.
+   *
+   * After calling disable(), the enemy remains visible (for the death animation)
+   * but no longer participates in gameplay.
+   */
+  disable(): void {
+    this.dead = true;
+
+    // Stop movement by zeroing velocity and disabling physics
+    if (this.sprite.body) {
+      const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(0, 0);
+      body.enable = false;
+    }
+
+    // Reset to idle state (no more walking/patrol animations)
+    this.state = "idle";
+  }
+
+  /**
+   * Destroys the enemy and releases all Phaser resources.
+   *
+   * This method performs a thorough cleanup:
+   * 1. Marks the enemy as dead.
+   * 2. Stops any ongoing animations to release animation resources.
+   * 3. Disables the physics body to remove from collision systems.
+   * 4. Destroys the sprite (removes from display list and physics world).
+   *
+   * After calling destroy(), the enemy instance should not be used further.
+   */
+  destroy(): void {
+    this.dead = true;
+
+    if (this.sprite) {
+      // Stop any ongoing animations to release animation resources
+      if (this.sprite.anims) {
+        this.sprite.anims.stop();
+      }
+
+      // Disable physics body to remove from collision detection
+      if (this.sprite.body) {
+        const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+        body.setVelocity(0, 0);
+        body.enable = false;
+      }
+
+      // Destroy the sprite — removes from display list and physics world
+      this.sprite.destroy();
+    }
   }
 }

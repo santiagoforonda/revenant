@@ -22,6 +22,9 @@ const WALK_FRAME_RATE = 8;
 /** Idle animation frame rate */
 const IDLE_FRAME_RATE = 1;
 
+/** Death animation frame rate */
+const DEATH_FRAME_RATE = 8;
+
 /**
  * Frame ranges for the Skeleton spritesheet.
  *
@@ -44,6 +47,16 @@ const SKELETON_DIRECTION_FRAMES: Record<EnemyDirection, { start: number; end: nu
 };
 
 /**
+ * Death animation frames for the Skeleton.
+ * Row 20 of the skeleton spritesheet (13 columns per row).
+ * Frame indices: 260 to 265 (6 frames).
+ */
+const SKELETON_DEATH_FRAMES = {
+  start: 20 * SKELETON_COLS_PER_ROW,
+  end: 20 * SKELETON_COLS_PER_ROW + 5,
+};
+
+/**
  * Frame ranges for the Minotaur spritesheet.
  *
  * The Minotaur uses the same LPC layout as the Skeleton (64×64, 13 columns per row).
@@ -56,6 +69,16 @@ const MINOTAUR_DIRECTION_FRAMES: Record<EnemyDirection, { start: number; end: nu
   left:  { start: 9 * MINOTAUR_COLS_PER_ROW, end: 9 * MINOTAUR_COLS_PER_ROW + 8, idle: 9 * MINOTAUR_COLS_PER_ROW },
   down:  { start: 10 * MINOTAUR_COLS_PER_ROW, end: 10 * MINOTAUR_COLS_PER_ROW + 8, idle: 10 * MINOTAUR_COLS_PER_ROW },
   right: { start: 11 * MINOTAUR_COLS_PER_ROW, end: 11 * MINOTAUR_COLS_PER_ROW + 8, idle: 11 * MINOTAUR_COLS_PER_ROW },
+};
+
+/**
+ * Death animation frames for the Minotaur.
+ * Row 20 of the minotaur spritesheet (13 columns per row).
+ * Frame indices: 260 to 265 (6 frames).
+ */
+const MINOTAUR_DEATH_FRAMES = {
+  start: 20 * MINOTAUR_COLS_PER_ROW,
+  end: 20 * MINOTAUR_COLS_PER_ROW + 5,
 };
 
 /**
@@ -78,6 +101,16 @@ const HEDGEHOG_DIRECTION_FRAMES: Record<EnemyDirection, { start: number; end: nu
 };
 
 /**
+ * Death animation frames for the Hedgehog.
+ * Row 4 of the hedgehog spritesheet (10 columns per row).
+ * Frame indices: 40 to 45 (6 frames).
+ */
+const HEDGEHOG_DEATH_FRAMES = {
+  start: 4 * HEDGEHOG_COLS_PER_ROW,
+  end: 4 * HEDGEHOG_COLS_PER_ROW + 5,
+};
+
+/**
  * Frame ranges for the Wolf spritesheet.
  *
  * The Wolf uses the same LPC layout as the Skeleton/Minotaur (64×64, 13 columns per row).
@@ -90,6 +123,16 @@ const WOLF_DIRECTION_FRAMES: Record<EnemyDirection, { start: number; end: number
   left:  { start: 9 * WOLF_COLS_PER_ROW, end: 9 * WOLF_COLS_PER_ROW + 8, idle: 9 * WOLF_COLS_PER_ROW },
   down:  { start: 10 * WOLF_COLS_PER_ROW, end: 10 * WOLF_COLS_PER_ROW + 8, idle: 10 * WOLF_COLS_PER_ROW },
   right: { start: 11 * WOLF_COLS_PER_ROW, end: 11 * WOLF_COLS_PER_ROW + 8, idle: 11 * WOLF_COLS_PER_ROW },
+};
+
+/**
+ * Death animation frames for the Wolf.
+ * Row 20 of the wolf spritesheet (13 columns per row).
+ * Frame indices: 260 to 265 (6 frames).
+ */
+const WOLF_DEATH_FRAMES = {
+  start: 20 * WOLF_COLS_PER_ROW,
+  end: 20 * WOLF_COLS_PER_ROW + 5,
 };
 
 /**
@@ -164,6 +207,10 @@ class EnemyAnimationRegistrarImpl implements EnemyAnimationRegistrarInterface {
     }
 
     this.registerDirectionalAnimations(scene.anims, config, frameData);
+
+    // Register death animation if available for this enemy type
+    this.registerDeathAnimation(scene.anims, config);
+
     return true;
   }
 
@@ -258,6 +305,57 @@ class EnemyAnimationRegistrarImpl implements EnemyAnimationRegistrarInterface {
           repeat: -1,
         });
       }
+    }
+  }
+
+  /**
+   * Registers the death animation for an enemy type if death frame data exists.
+   * The death animation key follows the pattern: `{enemyType}-death`
+   * Plays once (no repeat) since death is a one-shot sequence.
+   */
+  private registerDeathAnimation(
+    anims: Phaser.Animations.AnimationManager,
+    config: EnemySpriteConfig
+  ): void {
+    const deathFrames = this.getDeathFramesForEnemy(config.enemyType);
+    if (!deathFrames) {
+      return; // No death animation data for this enemy type
+    }
+
+    const deathKey = `${config.enemyType}-death`;
+    if (anims.exists(deathKey)) {
+      return; // Already registered
+    }
+
+    anims.create({
+      key: deathKey,
+      frames: anims.generateFrameNumbers(config.textureKey, {
+        start: deathFrames.start,
+        end: deathFrames.end,
+      }),
+      frameRate: DEATH_FRAME_RATE,
+      repeat: 0,
+    });
+  }
+
+  /**
+   * Returns the death animation frame range for the given enemy type,
+   * or null if no death animation is defined.
+   */
+  private getDeathFramesForEnemy(
+    enemyType: EnemyType
+  ): { start: number; end: number } | null {
+    switch (enemyType) {
+      case EnemyType.Skeleton:
+        return SKELETON_DEATH_FRAMES;
+      case EnemyType.Minotaur:
+        return MINOTAUR_DEATH_FRAMES;
+      case EnemyType.Hedgehog:
+        return HEDGEHOG_DEATH_FRAMES;
+      case EnemyType.Wolf:
+        return WOLF_DEATH_FRAMES;
+      default:
+        return null;
     }
   }
 }

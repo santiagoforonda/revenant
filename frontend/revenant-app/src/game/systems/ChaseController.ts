@@ -24,9 +24,11 @@ export const DEFAULT_CHASE_SPEED = 60;
 
 /**
  * Distance threshold in pixels to consider the chase target reached.
- * When the enemy is within this distance, movement stops to prevent overshooting.
+ * When the enemy is within this distance, movement stops.
+ * Set to a comfortable melee range so enemies stop near the player
+ * without overlapping their sprite.
  */
-export const CHASE_ARRIVAL_THRESHOLD = 2;
+export const CHASE_ARRIVAL_THRESHOLD = 20;
 
 /**
  * ChaseController is the dedicated component responsible for pursuing the
@@ -223,8 +225,9 @@ export class ChaseController {
     const dy = targetY - currentY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // If within arrival threshold, don't move to prevent overshooting
+    // If within arrival threshold, stop and idle
     if (distance <= CHASE_ARRIVAL_THRESHOLD) {
+      this.enemy.setState("idle");
       return;
     }
 
