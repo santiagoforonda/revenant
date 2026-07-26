@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Phaser from "phaser";
-import { useAuthStore } from "../../auth/store/auth-store";
+import { useAuthStore } from "@/auth/store/auth-store";
 import { eventBus } from "../events";
 import { bootstrapService } from "../services/BootstrapService";
 import { MainScene } from "../scenes/MainScene";
@@ -11,6 +11,7 @@ export const GamePage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const gameRef = useRef<Phaser.Game | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -22,6 +23,15 @@ export const GamePage = () => {
     navigate("/", { replace: true });
   }, [navigate]);
 
+  const handleLogoutRequested = useCallback(() => {
+    if (gameRef.current) {
+      gameRef.current.destroy(true);
+      gameRef.current = null;
+    }
+    logout();
+    navigate("/", { replace: true });
+  }, [logout, navigate]);
+
   useEffect(() => {
     eventBus.on("SESSION_EXPIRED", handleSessionExpired);
 
@@ -29,6 +39,14 @@ export const GamePage = () => {
       eventBus.off("SESSION_EXPIRED", handleSessionExpired);
     };
   }, [handleSessionExpired]);
+
+  useEffect(() => {
+    eventBus.on("LOGOUT_REQUESTED", handleLogoutRequested);
+
+    return () => {
+      eventBus.off("LOGOUT_REQUESTED", handleLogoutRequested);
+    };
+  }, [handleLogoutRequested]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -67,8 +85,8 @@ export const GamePage = () => {
       ? PLAYER_TYPE_TO_CLASS[user.typePlayer] ?? PlayerClass.Caballero
       : PlayerClass.Caballero;
 
-    // Add and start MainScene with the resolved player class
-    gameRef.current.scene.add("MainScene", MainScene, true, { playerClass });
+    // Add and start MainScene with the resolved player class and player data
+    gameRef.current.scene.add("MainScene", MainScene, true, { playerClass, playerData: user });
 
     if (user) {
       eventBus.emit("GAME_INITIALIZED", user);

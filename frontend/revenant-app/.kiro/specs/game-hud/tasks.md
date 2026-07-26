@@ -4,9 +4,11 @@
 
 This document defines the implementation tasks for the Game HUD feature.
 
-The objective is to implement a persistent user interface displayed at the top of the game screen that presents the authenticated player's information throughout gameplay.
+The objective is to implement a persistent HUD using Phaser that displays the authenticated player's information throughout gameplay.
 
-The Game HUD is implemented entirely in React and consumes data from the Authentication Store. It remains independent from Phaser and gameplay mechanics.
+The HUD is rendered entirely by Phaser and remains fixed at the top of the screen independently of camera movement.
+
+The only interaction between the HUD and React is the Logout action, which shall be communicated through the application's Event Bus.
 
 # Implementation Plan
 
@@ -14,15 +16,15 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
 
 **Objectives**
 
-- Create the Game HUD component.
-- Integrate the HUD into the Game Page.
-- Establish communication with the Authentication Store.
+- Create the Phaser HUD system.
+- Integrate it into the MainScene.
+- Connect it to the player session data.
 
 **Deliverables**
 
-- GameHUD component.
-- GamePage integration.
-- Authentication Store connection.
+- HUD Manager.
+- MainScene integration.
+- Player session synchronization.
 
 ---
 
@@ -35,12 +37,12 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
 
 **Deliverables**
 
-- Username display.
-- Player class display.
+- Username.
+- Player class.
 - Health bar.
 - Experience bar.
-- Level display.
-- Gold display.
+- Level.
+- Gold.
 
 ---
 
@@ -48,14 +50,14 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
 
 **Objectives**
 
-- Implement the logout functionality.
-- Synchronize the HUD with the authentication lifecycle.
+- Implement logout through the Event Bus.
+- Keep Phaser independent from React.
 
 **Deliverables**
 
 - Logout button.
-- Logout flow.
-- Session synchronization.
+- Event emission.
+- React integration.
 
 ---
 
@@ -64,12 +66,12 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
 **Objectives**
 
 - Validate HUD behavior.
-- Verify architecture compliance.
+- Verify architectural compliance.
 
 **Deliverables**
 
-- Stable Game HUD.
-- Successful integration with the React application.
+- Stable Phaser HUD.
+- Successful Event Bus integration.
 
 ---
 
@@ -114,86 +116,86 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
 
 ## Tasks
 
-- [-] 1. Create the Game HUD component.
+- [x] 1. Implement the HUD Manager.
 
-  - Create the GameHUD React component.
-  - Position the HUD at the top of the screen.
-  - Ensure the HUD remains fixed independently of the Phaser camera.
-  - Prepare the layout for all HUD elements.
-
----
-
-- [~] 2. Integrate the Game HUD into the Game Page.
-
-  - Render the GameHUD component from the GamePage.
-  - Display the HUD only while the Game Page is active.
-  - Connect the HUD to the Authentication Store.
-  - Keep GamePage responsible only for composition.
+  - Create a dedicated HUD Manager responsible for rendering all HUD elements.
+  - Attach the HUD to the MainScene.
+  - Keep the HUD fixed to the camera.
+  - Centralize all HUD rendering logic inside the HUD Manager.
 
 ---
 
-- [~] 3. Display player information.
+- [x] 2. Integrate the HUD into the MainScene.
+
+  - Create one HUD Manager instance.
+  - Initialize the HUD after the player has been created.
+  - Update the HUD every frame if required.
+  - Keep MainScene responsible only for coordinating the HUD lifecycle.
+
+---
+
+- [x] 3. Display player information.
 
   - Display the authenticated username.
   - Display the player's class.
   - Display the player's current level.
   - Display the player's current gold.
-  - Synchronize all values with the Authentication Store.
+  - Synchronize displayed values with the authenticated player state.
 
 ---
 
-- [~] 4. Implement the status bars.
+- [x] 4. Implement the status bars.
 
-  - Create the Health Bar component.
-  - Create the Experience Bar component.
-  - Update both bars automatically when player data changes.
-  - Keep both components purely presentational.
+  - Create the Health Bar.
+  - Create the Experience Bar.
+  - Update both bars whenever player values change.
+  - Keep the rendering independent from gameplay logic.
 
 ---
 
-- [~] 5. Implement the logout functionality.
+- [x] 5. Implement the Logout button.
 
-  - Add the Logout button.
-  - Invoke the Authentication Store logout action.
-  - Clear the authenticated session.
+  - Render the Logout button using Phaser UI objects.
+  - Detect pointer interactions.
+  - Emit a LogoutRequested event through the Event Bus.
+  - Do not invoke React or authentication services directly.
+
+---
+
+- [x] 6. Integrate the Event Bus.
+
+  - Subscribe React to the LogoutRequested event.
+  - Invoke the existing authentication logout workflow.
   - Redirect the player to the login screen.
+  - Preserve the architectural separation between Phaser and React.
 
 ---
 
-- [~] 6. Synchronize the HUD with the player session.
-
-  - Initialize the HUD after successful authentication.
-  - Update displayed values when the Authentication Store changes.
-  - Remove the HUD after logout.
-  - Handle missing session data safely.
-
----
-
-- [~] 7. Validate HUD behavior.
+- [x] 7. Validate HUD behavior.
 
   - Verify the HUD remains fixed during camera movement.
   - Verify username, class, level, and gold are displayed correctly.
   - Verify the Health Bar updates correctly.
   - Verify the Experience Bar updates correctly.
-  - Verify logout successfully returns the player to the login screen.
+  - Verify the Logout button emits the expected event.
 
 ---
 
-- [~] 8. Validate architecture compliance.
+- [x] 8. Validate architecture compliance.
 
-  - Verify the Game HUD never communicates directly with the backend.
-  - Verify the Game HUD contains no gameplay logic.
-  - Verify the Game HUD remains independent from Phaser.
-  - Verify the Authentication Store remains the single source of truth.
-  - Verify the Game HUD remains reusable by future gameplay features.
+  - Verify the HUD never communicates directly with React.
+  - Verify the HUD never communicates directly with backend services.
+  - Verify the Event Bus is the only communication channel between Phaser and React.
+  - Verify MainScene contains no HUD rendering logic.
+  - Verify the HUD remains reusable by future gameplay features.
 
 ---
 
 ## Notes
 
 - This feature MUST comply with:
-  - `react_developer.md`
   - `phaser_developer.md`
+  - `react_developer.md`
 
 - This feature MUST comply with the architecture documentation located under:
 
@@ -201,28 +203,23 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
   docs/architecture/
   ```
 
-- The Game HUD MUST be implemented as a React component.
+- The HUD MUST be implemented entirely in Phaser.
 
-- The Game HUD MUST remain fixed at the top of the screen.
+- All HUD elements MUST remain fixed to the camera.
 
-- The Game HUD MUST consume all player information exclusively from the Authentication Store.
+- The HUD MUST obtain player information from the authenticated player state.
 
-- The Authentication Store MUST remain the single source of truth for authenticated player data.
+- The Logout button MUST emit a `LogoutRequested` event through the Event Bus.
 
-- The Game HUD MUST never communicate directly with backend services.
+- React MUST subscribe to the Event Bus and execute the existing logout workflow.
 
-- The Game HUD MUST never contain gameplay logic.
+- Phaser MUST NEVER import React components or authentication services.
 
-- The Health Bar and Experience Bar MUST remain presentational components.
+- React MUST NEVER manipulate Phaser objects directly.
 
-- The Logout button MUST invoke the existing authentication logout workflow.
+- The Event Bus MUST remain the only communication mechanism between Phaser and React.
 
-- The Game HUD MUST remain reusable by future features including:
-  - Enemy Health UI
-  - Boss Health Bar
-  - Skill Cooldown UI
-  - Quest Tracker
-  - Notifications
+- Future HUD modules (Boss Health Bar, Enemy Health UI, Skill Cooldowns, Quest Tracker, etc.) SHOULD reuse the HUD Manager.
 
 - Out of scope:
   - Inventory.
@@ -234,4 +231,3 @@ The Game HUD is implemented entirely in React and consumes data from the Authent
   - Skill bar.
   - Backend communication.
   - Player progression calculations.
-```

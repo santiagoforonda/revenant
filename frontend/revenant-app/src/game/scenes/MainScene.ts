@@ -20,6 +20,9 @@ import { PatrolController } from "@/game/systems/PatrolController";
 import { DetectionController } from "@/game/systems/DetectionController";
 import { ChaseController } from "@/game/systems/ChaseController";
 import { ReturnController } from "@/game/systems/ReturnController";
+import { HudManager } from "@/game/ui/hud";
+import { eventBus } from "@/game/events/event-bus";
+import type { LoginResponse } from "@/auth/interfaces/auth-response";
 
 /**
  * MainScene is the primary gameplay scene for Revenant.
@@ -75,6 +78,8 @@ export class MainScene extends Phaser.Scene {
   private wasdKeys!: WasdKeys;
   private map!: Phaser.Tilemaps.Tilemap;
   private playerClass: PlayerClass = PlayerClass.Caballero;
+  private playerData: LoginResponse | null = null;
+  private hudManager!: HudManager;
 
   constructor() {
     super({ key: "MainScene" });
@@ -82,11 +87,15 @@ export class MainScene extends Phaser.Scene {
 
   /**
    * Init phase — receives scene data from the game launcher.
-   * Used to pass the player class resolved from the backend response.
+   * Used to pass the player class resolved from the backend response
+   * and the full player data for HUD initialization.
    */
-  init(data: { playerClass?: PlayerClass }): void {
+  init(data: { playerClass?: PlayerClass; playerData?: LoginResponse }): void {
     if (data.playerClass) {
       this.playerClass = data.playerClass;
+    }
+    if (data.playerData) {
+      this.playerData = data.playerData;
     }
   }
 
@@ -253,10 +262,27 @@ export class MainScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.getSprite());
 
     // Zoom in to get a closer view of the player
-    this.cameras.main.setZoom(2);
+    this.cameras.main.setZoom(4);
 
     // Center the camera on the player immediately on scene start
     this.cameras.main.centerOn(this.player.getX(), this.player.getY());
+
+    // --- HUD Integration ---
+    // Create the HUD Manager after the player and camera are configured.
+    // MainScene only coordinates the HUD lifecycle — no rendering logic here.
+    this.hudManager = new HudManager(this);
+
+    // Initialize HUD with player data passed through scene init.
+    // This avoids the race condition where GAME_INITIALIZED is emitted
+    // before MainScene.create() subscribes to it.
+    if (this.playerData) {
+      this.hudManager.setPlayerData(this.playerData);
+    }
+
+    // Also subscribe to GAME_INITIALIZED for future re-initialization scenarios.
+    eventBus.on("GAME_INITIALIZED", (data) => {
+      this.hudManager.setPlayerData(data);
+    });
 
     // --- Enemy Animation Registration ---
     // Register Skeleton animations once during scene creation.
@@ -487,5 +513,8 @@ export class MainScene extends Phaser.Scene {
     for (const controller of this.returnControllers) {
       controller.update(delta);
     }
+
+    // Update the HUD every frame for any time-based animations or logic.
+    this.hudManager.update();
   }
 }
