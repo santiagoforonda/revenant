@@ -259,7 +259,7 @@ INSERT INTO characters (name, description) VALUES
 ('Esqueleto', 'Restos animados de un antiguo soldado, vagando sin descanso por el Bosque Encantado.');
 
 INSERT INTO enemies (id, id_map, health_points, damage_points, armor_points, gold_reward, experience_reward, speed_attack_points)
-SELECT c.id, m.id, 65, 65, 30, 15, 30, 10
+SELECT c.id, m.id, 70, 12, 6, 15, 20, 9
 FROM characters c, maps m
 WHERE c.description = 'Restos animados de un antiguo soldado, vagando sin descanso por el Bosque Encantado.'
   AND m.name = 'Bosque Encantado';
@@ -268,7 +268,7 @@ INSERT INTO characters (name, description) VALUES
 ('Lobos', 'Manada de lobos salvajes que cazan en grupo entre la maleza del Bosque Encantado.');
 
 INSERT INTO enemies (id, id_map, health_points, damage_points, armor_points, gold_reward, experience_reward, speed_attack_points)
-SELECT c.id, m.id, 80, 40, 42, 8, 15, 10
+SELECT c.id, m.id, 50, 12, 4, 10, 15, 11
 FROM characters c, maps m
 WHERE c.description = 'Manada de lobos salvajes que cazan en grupo entre la maleza del Bosque Encantado.'
   AND m.name = 'Bosque Encantado';
@@ -277,7 +277,7 @@ INSERT INTO characters (name, description) VALUES
 ('Erizos', 'Pequeñas criaturas espinosas que infestan los senderos del bosque, débiles pero numerosas.');
 
 INSERT INTO enemies (id, id_map, health_points, damage_points, armor_points, gold_reward, experience_reward, speed_attack_points)
-SELECT c.id, m.id, 40, 25, 30, 5, 10, 10
+SELECT c.id, m.id, 30, 8, 2, 5, 10, 10
 FROM characters c, maps m
 WHERE c.description = 'Pequeñas criaturas espinosas que infestan los senderos del bosque, débiles pero numerosas.'
   AND m.name = 'Bosque Encantado';
@@ -286,7 +286,7 @@ INSERT INTO characters (name, description) VALUES
 ('Minotauro', 'El guardián colosal del Bosque Encantado, custodio del paso hacia el desierto.');
 
 INSERT INTO enemies (id, id_map, health_points, damage_points, armor_points, gold_reward, experience_reward, speed_attack_points)
-SELECT c.id, m.id, 500, 120, 90, 250, 250, 8
+SELECT c.id, m.id, 180, 18, 5, 250, 250, 8
 FROM characters c, maps m
 WHERE c.description = 'El guardián colosal del Bosque Encantado, custodio del paso hacia el desierto.'
   AND m.name = 'Bosque Encantado';
