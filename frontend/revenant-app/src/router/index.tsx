@@ -1,6 +1,7 @@
 import {createBrowserRouter} from "react-router-dom";
 import { LoginPage } from "../auth/pages/login/LoginPage";
 import { RegisterPage } from "../auth/pages/register/RegisterPage";
+import { LoaderScreen } from "@/auth/components/LoaderScreen";
 import { GamePage } from "../game/pages/GamePage";
 
 export const router = createBrowserRouter([
@@ -11,6 +12,10 @@ export const router = createBrowserRouter([
     {
         path:"/register",
         element:<RegisterPage></RegisterPage>
+    },
+    {
+        path:"/loading",
+        element:<LoaderScreen />
     },
     {
         path:"/game",

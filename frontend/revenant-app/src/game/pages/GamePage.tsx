@@ -5,6 +5,7 @@ import { useAuthStore } from "../../auth/store/auth-store";
 import { eventBus } from "../events";
 import { bootstrapService } from "../services/BootstrapService";
 import { MainScene } from "../scenes/MainScene";
+import { PLAYER_TYPE_TO_CLASS, PlayerClass } from "../config/ClassSpriteRegistry";
 
 export const GamePage = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ export const GamePage = () => {
           debug: false,
         },
       },
-      scene: [MainScene],
+      scene: [],
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -60,6 +61,14 @@ export const GamePage = () => {
     };
 
     gameRef.current = new Phaser.Game(config);
+
+    // Resolve player class from backend typePlayer
+    const playerClass = user?.typePlayer
+      ? PLAYER_TYPE_TO_CLASS[user.typePlayer] ?? PlayerClass.Caballero
+      : PlayerClass.Caballero;
+
+    // Add and start MainScene with the resolved player class
+    gameRef.current.scene.add("MainScene", MainScene, true, { playerClass });
 
     if (user) {
       eventBus.emit("GAME_INITIALIZED", user);

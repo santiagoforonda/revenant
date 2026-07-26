@@ -3,6 +3,23 @@ import { Player } from "../entities/characters/Player";
 import { Enemy } from "../entities/characters/Enemy";
 import { enemyService } from "../services/EnemyService";
 import { enemyFactory } from "../factories/EnemyFactory";
+import { playerFactory } from "@/game/factories/PlayerFactory";
+import { assetLoaderService } from "@/game/services/AssetLoaderService";
+import {
+  CLASS_SPRITE_REGISTRY,
+  SHARED_BODY_KEY,
+  FRAME_WIDTH,
+  FRAME_HEIGHT,
+  PlayerClass,
+  PLAYER_TYPE_TO_CLASS,
+} from "@/game/config/ClassSpriteRegistry";
+import type { EquipmentLayer } from "@/game/config/ClassSpriteRegistry";
+import { EnemyType } from "@/game/config/EnemySpriteRegistry";
+import { enemyAnimationRegistrar } from "@/game/services/EnemyAnimationRegistrar";
+import { PatrolController } from "@/game/systems/PatrolController";
+import { DetectionController } from "@/game/systems/DetectionController";
+import { ChaseController } from "@/game/systems/ChaseController";
+import { ReturnController } from "@/game/systems/ReturnController";
 
 /**
  * MainScene is the primary gameplay scene for Revenant.
@@ -51,71 +68,51 @@ interface WasdKeys {
 export class MainScene extends Phaser.Scene {
   private player!: Player;
   private enemies: Enemy[] = [];
+  private patrolControllers: PatrolController[] = [];
+  private detectionControllers: DetectionController[] = [];
+  private chaseControllers: ChaseController[] = [];
+  private returnControllers: ReturnController[] = [];
   private wasdKeys!: WasdKeys;
   private map!: Phaser.Tilemaps.Tilemap;
+  private playerClass: PlayerClass = PlayerClass.Caballero;
 
   constructor() {
     super({ key: "MainScene" });
   }
 
   /**
+   * Init phase — receives scene data from the game launcher.
+   * Used to pass the player class resolved from the backend response.
+   */
+  init(data: { playerClass?: PlayerClass }): void {
+    if (data.playerClass) {
+      this.playerClass = data.playerClass;
+    }
+  }
+
+  /**
    * Preload phase — load the Tiled map and all tileset images.
    */
   preload(): void {
-    // Load knight body spritesheet (64x64 per frame)
-    this.load.spritesheet(
-      "knight-body",
-      "/src/assets/characters/classes/knight/body/body.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
+    // Load class-based player assets using the registry and asset loader
+    this.preloadPlayerAssets(this.playerClass);
 
-    // Load knight torso spritesheet (64x64 per frame)
-    this.load.spritesheet(
-      "knight-torso",
-      "/src/assets/characters/classes/knight/torso/torso.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
+    // Load skeleton spritesheet for enemies using AssetLoaderService.
+    // The service uses EnemySpriteRegistry which defines 32×48 frame dimensions.
+    // This must complete before animation registration occurs in the create() phase.
+    assetLoaderService.preloadEnemySpritesheet(this, EnemyType.Skeleton);
 
-    // Load knight legs spritesheet (64x64 per frame)
-    this.load.spritesheet(
-      "knight-legs",
-      "/src/assets/characters/classes/knight/legs/legs.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
+    // Load lobos (wolves) spritesheet for enemies using AssetLoaderService.
+    // The service uses EnemySpriteRegistry which defines 32×48 frame dimensions.
+    assetLoaderService.preloadEnemySpritesheet(this, EnemyType.Wolf);
 
-    // Load knight feet spritesheet (64x64 per frame)
-    this.load.spritesheet(
-      "knight-feet",
-      "/src/assets/characters/classes/knight/feet/feet.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
+    // Load hedgehog spritesheet for enemies using AssetLoaderService.
+    // The service uses EnemySpriteRegistry which defines 32×48 frame dimensions.
+    assetLoaderService.preloadEnemySpritesheet(this, EnemyType.Hedgehog);
 
-    // Load knight weapon spritesheet (64x64 per frame, 6 cols × 4 rows)
-    this.load.spritesheet(
-      "knight-weapon",
-      "/src/assets/characters/classes/knight/weapon/weapon.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
-
-    // Load knight shield spritesheet (64x64 per frame, 8 cols × 4 rows)
-    this.load.spritesheet(
-      "knight-shield",
-      "/src/assets/characters/classes/knight/shield/shield.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
-
-    // Load knight helmet images (one per direction, 128x128 single images)
-    this.load.image("knight-helmet-s", "/src/assets/characters/classes/knight/helmet/s.png");
-    this.load.image("knight-helmet-n", "/src/assets/characters/classes/knight/helmet/n.png");
-    this.load.image("knight-helmet-e", "/src/assets/characters/classes/knight/helmet/e.png");
-    this.load.image("knight-helmet-w", "/src/assets/characters/classes/knight/helmet/w.png");
-
-    // Load skeleton spritesheet for enemies (64x64 per frame)
-    this.load.spritesheet(
-      "skeleton",
-      "/src/assets/characters/classes/skeleton/skeleton.png",
-      { frameWidth: 64, frameHeight: 64 }
-    );
+    // Load minotauro spritesheet for enemies using AssetLoaderService.
+    // The service uses EnemySpriteRegistry which defines 32×48 frame dimensions.
+    assetLoaderService.preloadEnemySpritesheet(this, EnemyType.Minotaur);
 
     // Load the Tiled map JSON (embedded version with resolved tilesets)
     this.load.tilemapTiledJSON("map-one", `${MAPS_BASE}/map_one_embedded.json`);
@@ -186,10 +183,9 @@ export class MainScene extends Phaser.Scene {
     const initialX = 192;
     const initialY = 56;
 
-    // Register player and helmet animations before creating the player
-    Player.registerAnimations(this);
-
-    this.player = new Player(this, initialX, initialY);
+    // Create the player entity through the PlayerFactory.
+    // The factory resolves the class config, verifies assets, and registers animations internally.
+    this.player = playerFactory.create({ scene: this, x: initialX, y: initialY, playerClass: this.playerClass });
 
     // --- Collision Configuration ---
     // Only tiles with blocking object types should prevent player movement.
@@ -262,6 +258,20 @@ export class MainScene extends Phaser.Scene {
     // Center the camera on the player immediately on scene start
     this.cameras.main.centerOn(this.player.getX(), this.player.getY());
 
+    // --- Enemy Animation Registration ---
+    // Register Skeleton animations once during scene creation.
+    // The registrar verifies the spritesheet is loaded and prevents duplicate registration.
+    enemyAnimationRegistrar.registerAnimations(this, EnemyType.Skeleton);
+
+    // Register Minotaur animations using the same infrastructure.
+    enemyAnimationRegistrar.registerAnimations(this, EnemyType.Minotaur);
+
+    // Register Hedgehog animations (rows 0-3).
+    enemyAnimationRegistrar.registerAnimations(this, EnemyType.Hedgehog);
+
+    // Register Wolf animations (rows 8-11).
+    enemyAnimationRegistrar.registerAnimations(this, EnemyType.Wolf);
+
     // --- Enemy Spawning ---
     // Spawn enemies asynchronously after scene initialization
     this.spawnEnemies(1); // mapId = 1 for map_one
@@ -293,24 +303,26 @@ export class MainScene extends Phaser.Scene {
 
     // Step 4: Process each spawn object
     for (const obj of objectLayer.objects) {
-      // Only process enemySpawn objects
-      if (obj.name !== "enemySpawn") continue;
+      // Process enemySpawn and bossSpawn objects
+      if (obj.name !== "enemySpawn" && obj.name !== "bossSpawn") continue;
 
       // Extract enemyId from custom properties.
+      // enemySpawn uses "enemyId", bossSpawn uses "id"
       // Phaser may expose properties as an array [{name, value}] or as a flat object {key: value}
       let enemyId: number | undefined;
+      const propName = obj.name === "bossSpawn" ? "id" : "enemyId";
 
       if (Array.isArray(obj.properties)) {
         const prop = obj.properties.find(
-          (p: { name: string; value: unknown }) => p.name === "enemyId"
+          (p: { name: string; value: unknown }) => p.name === propName
         );
         enemyId = prop?.value as number | undefined;
       } else if (obj.properties && typeof obj.properties === "object") {
-        enemyId = (obj.properties as Record<string, unknown>)["enemyId"] as number | undefined;
+        enemyId = (obj.properties as Record<string, unknown>)[propName] as number | undefined;
       }
 
       if (enemyId === undefined) {
-        console.warn(`[MainScene] Spawn object at (${obj.x}, ${obj.y}) missing enemyId`);
+        console.warn(`[MainScene] Spawn object at (${obj.x}, ${obj.y}) missing ${propName}`);
         continue;
       }
 
@@ -327,6 +339,36 @@ export class MainScene extends Phaser.Scene {
       const enemy = enemyFactory.create(this, spawnX, spawnY, enemyStats);
       if (enemy) {
         this.enemies.push(enemy);
+
+        // Initialize patrol behavior for the spawned enemy (Requirement 1.1, 1.2)
+        const patrolController = new PatrolController(enemy, spawnX, spawnY);
+        this.patrolControllers.push(patrolController);
+
+        // Initialize detection behavior for the spawned enemy
+        const detectionController = new DetectionController(enemy, this.player);
+        this.detectionControllers.push(detectionController);
+
+        // Initialize chase behavior for the spawned enemy (Requirement 1.1, 6.1)
+        const chaseController = new ChaseController(enemy, this.player);
+        this.chaseControllers.push(chaseController);
+
+        // Initialize return behavior for the spawned enemy
+        const returnController = new ReturnController(enemy, spawnX, spawnY, patrolController);
+        this.returnControllers.push(returnController);
+
+        // Wire detection → chase: chase begins/stops based on detection events
+        detectionController.onDetectionChange(chaseController.handleDetectionEvent);
+
+        // Wire detection → return: return begins on PlayerLost, cancels on PlayerDetected
+        detectionController.onDetectionChange(returnController.handleDetectionEvent);
+
+        // Coordinate patrol with detection: deactivate patrol when player detected.
+        // Patrol reactivation is handled by the ReturnController after reaching spawn.
+        detectionController.onDetectionChange((event) => {
+          if (event === "PlayerDetected") {
+            patrolController.deactivate();
+          }
+        });
       }
     }
 
@@ -334,10 +376,68 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
+   * Preloads all sprite assets for the given player class using the registry
+   * and AssetLoaderService for data-driven path resolution.
+   *
+   * Queues loads directly via this.load so Phaser's built-in preload lifecycle
+   * handles the actual loading (avoids calling load.start() manually).
+   *
+   * @param playerClass - The player class whose assets should be preloaded.
+   */
+  private preloadPlayerAssets(playerClass: PlayerClass): void {
+    const config = CLASS_SPRITE_REGISTRY[playerClass];
+
+    // Load the shared body spritesheet (used by all classes)
+    this.load.spritesheet(
+      SHARED_BODY_KEY,
+      "/src/assets/characters/classes/knight/body/body.png",
+      { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
+    );
+
+    // Load each non-null equipment layer spritesheet
+    const layers: EquipmentLayer[] = ["feet", "legs", "torso", "weapon", "shield"];
+    for (const layer of layers) {
+      const assetKey = config.layers[layer];
+      if (assetKey === null) {
+        continue;
+      }
+      const path = assetLoaderService.resolveAssetPath(playerClass, layer);
+      this.load.spritesheet(assetKey, path, {
+        frameWidth: FRAME_WIDTH,
+        frameHeight: FRAME_HEIGHT,
+      });
+    }
+
+    // Load helmet based on helmetType
+    const helmetKey = config.layers.helmet;
+    if (helmetKey !== null) {
+      const classId = playerClass as string;
+      if (config.helmetType === "directional") {
+        const basePath = `/src/assets/characters/classes/${classId}/helmet`;
+        this.load.image(`${helmetKey}-s`, `${basePath}/s.png`);
+        this.load.image(`${helmetKey}-n`, `${basePath}/n.png`);
+        this.load.image(`${helmetKey}-e`, `${basePath}/e.png`);
+        this.load.image(`${helmetKey}-w`, `${basePath}/w.png`);
+      } else {
+        const helmetPath = assetLoaderService.resolveAssetPath(playerClass, "helmet");
+        this.load.spritesheet(
+          helmetKey,
+          helmetPath,
+          { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
+        );
+      }
+    }
+  }
+
+  /**
    * Update phase — runs every frame during gameplay.
    * Reads WASD input and forwards movement commands to the Player entity.
+   * Updates all patrol controllers so enemies move autonomously.
+   *
+   * @param _time - The current game time in milliseconds (unused).
+   * @param delta - The time elapsed since the last frame in milliseconds.
    */
-  update(): void {
+  update(_time: number, delta: number): void {
     const keys = this.wasdKeys;
     let vx = 0;
     let vy = 0;
@@ -359,5 +459,33 @@ export class MainScene extends Phaser.Scene {
 
     // Synchronize helmet with physics body position
     this.player.update();
+
+    // Update all patrol controllers independently.
+    // Each controller manages patrol behavior for a single enemy.
+    // MainScene only invokes the update — no patrol decision logic lives here.
+    for (const controller of this.patrolControllers) {
+      controller.update(delta);
+    }
+
+    // Update all detection controllers independently.
+    // Each controller evaluates detection for a single enemy.
+    // MainScene only invokes the update — no detection logic lives here.
+    for (const controller of this.detectionControllers) {
+      controller.update();
+    }
+
+    // Update all chase controllers independently.
+    // Each controller manages pursuit behavior for a single enemy.
+    // MainScene only invokes the update — no chase logic lives here.
+    for (const controller of this.chaseControllers) {
+      controller.update(delta);
+    }
+
+    // Update all return controllers independently.
+    // Each controller manages return-to-spawn behavior for a single enemy.
+    // MainScene only invokes the update — no return logic lives here.
+    for (const controller of this.returnControllers) {
+      controller.update(delta);
+    }
   }
 }

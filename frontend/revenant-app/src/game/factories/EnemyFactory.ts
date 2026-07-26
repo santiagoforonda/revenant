@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Enemy } from "../entities/characters/Enemy";
 import type { EnemyResponse } from "../interfaces/EnemyResponse";
+import { EnemyType } from "@/game/config/EnemySpriteRegistry";
 
 /**
  * EnemyFactory is the sole component responsible for creating Enemy entities.
@@ -15,6 +16,17 @@ import type { EnemyResponse } from "../interfaces/EnemyResponse";
 /** Maps enemyId to sprite keys. Only enemies with a configured sprite will be spawned. */
 const ENEMY_SPRITE_MAP: Record<number, string> = {
   15: "skeleton",
+  16: "lobos",
+  17: "hedgehog",
+  18: "minotauro",
+};
+
+/** Maps enemyId to EnemyType for animation support. Only enemies with animation support are listed. */
+const ENEMY_TYPE_MAP: Record<number, EnemyType> = {
+  15: EnemyType.Skeleton,
+  16: EnemyType.Wolf,
+  17: EnemyType.Hedgehog,
+  18: EnemyType.Minotaur,
 };
 
 /** Default sprite — not used, enemies without mapping are skipped */
@@ -41,7 +53,8 @@ class EnemyFactory {
     if (!spriteKey) {
       return null;
     }
-    return new Enemy(scene, x, y, stats, spriteKey);
+    const enemyType = ENEMY_TYPE_MAP[stats.id] ?? EnemyType.Skeleton;
+    return new Enemy(scene, x, y, stats, spriteKey, enemyType);
   }
 }
 

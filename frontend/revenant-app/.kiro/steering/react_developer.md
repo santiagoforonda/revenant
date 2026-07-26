@@ -302,11 +302,14 @@ React MUST NOT manipulate Phaser UI directly.
 
 # Performance
 
-React SHOULD avoid unnecessary re-renders.
+React MUST use the following hooks to optimize rendering:
 
-Components SHOULD be memoized only when justified.
+- `useRef` MUST be used to store mutable values that should NOT cause re-renders.
+- `useMemo` MUST be used to memorize computed values.
+- `useCallback` MUST be used to memorize functions.
+- `useReducer` MUST be used for complex state logic.
 
-Expensive calculations SHOULD be extracted from JSX.
+React MUST avoid unnecessary re-renders.
 
 React MUST avoid unnecessary state duplication.
 
