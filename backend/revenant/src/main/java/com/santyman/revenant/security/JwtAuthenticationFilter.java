@@ -42,6 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+
+        if(isPublicUrl(path).booleanValue()){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
         String token = getTokenFromRequest(request);
 
         if (token == null) {
@@ -82,5 +90,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return authorizationHeader.substring(7);
+    }
+
+    private Boolean isPublicUrl(String url){
+        if(url.startsWith("/api/auth/")){
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
     }
 }
