@@ -169,11 +169,25 @@ function LoginFormContent() {
 
 export const LoginPage = () => {
   return (
+
+    <section>
     <div
       className="relative min-h-screen flex items-center justify-center bg-[#000000] px-4"
       style={{ background: 'radial-gradient(ellipse at center, rgba(31,21,12,0.15) 0%, transparent 70%), #000000' }}
     >
       <ParticleBackground />
+
+    
+    <article className="m-4">
+      <div className="p-8 w-100">
+          <h1 className="text-center font-title text-4xl font-bold 
+          text-[#E1DCC9] mb-2 
+          animate-[torchlight_3.5s_ease-in-out_infinite]">Instrucciones</h1>
+          <p className="text-center  text-sm text-[#E1DCC9]/70 mb-8 mt-2">Usa las teclas WASD para moverte por el mapa y la tecla de espacio
+            para atacar, mata a todos los enemigos y habla con los aldeanos presionando la tecla E.
+          </p>
+      </div>
+    </article>
 
       <div className="relative z-10 w-full max-w-md">
         <AnimatedRoute>
@@ -181,12 +195,15 @@ export const LoginPage = () => {
         </AnimatedRoute>
       </div>
 
+      
+
       {/* Cinematic overlay for post-login darkness effect */}
       <div
         id="cinematic-overlay"
         className="fixed inset-0 z-50 bg-[#000000]"
-        style={{ opacity: 0, pointerEvents: "none" }}
-      />
+        style={{ opacity: 0, pointerEvents: "none" }}/>
     </div>
+    </section>
+    
   );
 };

@@ -5,6 +5,7 @@ import { DefaultSpriteComposer } from "@/game/services/SpriteComposer";
 import type { ComposedSprites, PlayerState, PlayerDirection } from "@/game/services/SpriteComposer";
 import { assetLoaderService } from "@/game/services/AssetLoaderService";
 import { eventBus } from "@/game/events";
+import type { LoginResponse } from "@/auth";
 
 /** Constant movement speed in pixels per second (used by MainScene input handler) */
 export const PLAYER_SPEED = 120;
@@ -12,6 +13,7 @@ export const PLAYER_SPEED = 120;
 export class Player {
   private readonly scene: Phaser.Scene;
   private readonly spriteComposer: DefaultSpriteComposer;
+  private readonly stats:LoginResponse;
   private currentClass: PlayerClass;
   private config: ClassSpriteConfig;
   private sprites: ComposedSprites;
@@ -27,11 +29,12 @@ export class Player {
    * @param y - Initial world Y coordinate.
    * @param config - The class sprite configuration resolved from the registry.
    */
-  constructor(scene: Phaser.Scene, x: number, y: number, config: ClassSpriteConfig) {
+  constructor(scene: Phaser.Scene, x: number, y: number, config: ClassSpriteConfig, stats:LoginResponse) {
     this.scene = scene;
     this.config = config;
     this.currentClass = config.classId;
     this.spriteComposer = new DefaultSpriteComposer();
+    this.stats=stats;
 
     // Compose all sprite layers via SpriteComposer
     this.sprites = this.spriteComposer.compose(scene, x, y, config);
@@ -173,6 +176,10 @@ export class Player {
    */
   getPlayerClass(): PlayerClass {
     return this.currentClass;
+  }
+
+  getStats():LoginResponse{
+    return this.stats;
   }
 
   /**

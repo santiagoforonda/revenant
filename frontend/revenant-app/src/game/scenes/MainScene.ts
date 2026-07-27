@@ -11,7 +11,6 @@ import {
   FRAME_WIDTH,
   FRAME_HEIGHT,
   PlayerClass,
-  PLAYER_TYPE_TO_CLASS,
 } from "@/game/config/ClassSpriteRegistry";
 import type { EquipmentLayer } from "@/game/config/ClassSpriteRegistry";
 import { EnemyType } from "@/game/config/EnemySpriteRegistry";
@@ -36,6 +35,8 @@ import { NpcInteractionSystem } from "../systems/NpcInteractionSystem";
 import { InteractionIndicator } from "../ui/InteractionIndicator";
 import { NpcInputHandler } from "../systems/NpcInputHandler";
 import { DialogWindow } from "../ui/DialogWindow";
+import { EnemyAttackController } from "../systems/EnemyAttackController";
+import { EnemyCombatSystem } from "../systems/EnemyCombatSystem";
 
 /**
  * MainScene is the primary gameplay scene for Revenant.
@@ -88,16 +89,18 @@ export class MainScene extends Phaser.Scene {
   private patrolControllers: PatrolController[] = [];
   private detectionControllers: DetectionController[] = [];
   private chaseControllers: ChaseController[] = [];
+  private enemyAttackController:EnemyAttackController[] =[]
   private returnControllers: ReturnController[] = [];
   private wasdKeys!: WasdKeys;
   private map!: Phaser.Tilemaps.Tilemap;
   private playerClass: PlayerClass = PlayerClass.Caballero;
-  private playerData: LoginResponse | null = null;
+  private playerData: LoginResponse | null =null;
   private hudManager!: HudManager;
   private enemyHealthBarHud!: EnemyHealthBarHud;
   private playerAttackSystem!: PlayerAttackSystem;
   private combatSystem!: CombatSystem;
   private enemyDeathSystem!: EnemyDeathSystem;
+  private enemyCombatSystem!:EnemyCombatSystem;
   private cooldownIndicator!: CooldownIndicator;
   private pendingNpcData: NpcDto[] | null = null;
   private sceneReady: boolean = false;
@@ -186,7 +189,8 @@ export class MainScene extends Phaser.Scene {
    * Create phase — build the tilemap, spawn player, configure input, collisions, and camera.
    */
   create(): void {
-    console.log("MainScene initialized successfully");
+
+    
 
     // Create the tilemap from the loaded JSON
     const map = this.make.tilemap({ key: "map-one" });
@@ -237,7 +241,7 @@ export class MainScene extends Phaser.Scene {
 
     // Create the player entity through the PlayerFactory.
     // The factory resolves the class config, verifies assets, and registers animations internally.
-    this.player = playerFactory.create({ scene: this, x: initialX, y: initialY, playerClass: this.playerClass });
+    this.player = playerFactory.create({ scene: this, x: initialX, y: initialY, playerClass: this.playerClass },this.playerData!);
 
     // --- Collision Configuration ---
     // Only tiles with blocking object types should prevent player movement.
@@ -361,7 +365,6 @@ export class MainScene extends Phaser.Scene {
     const playerAttack = this.playerData?.strongPoints ?? 10;
     this.combatSystem = new CombatSystem(playerAttack);
     this.combatSystem.start();
-    console.log(`[MainScene] CombatSystem started — playerAttack=${playerAttack} (from strongPoints)`);
 
     // PlayerAttackSystem listens for left-click and generates ATTACK_REQUEST events.
     // Uses the enemies array reference — enemies added asynchronously are visible.
@@ -373,7 +376,6 @@ export class MainScene extends Phaser.Scene {
     this.playerAttackSystem = new PlayerAttackSystem(
       this, this.player, this.enemies, undefined, attackAnimController
     );
-    console.log("[MainScene] PlayerAttackSystem initialized — left-click triggers attack");
 
     // Cooldown indicator — shows a symbol above the player during attack cooldown
     this.cooldownIndicator = new CooldownIndicator(
@@ -384,21 +386,14 @@ export class MainScene extends Phaser.Scene {
     // disable → death animation → destroy sprite → emit ENEMY_REMOVED.
     this.enemyDeathSystem = new EnemyDeathSystem();
     this.enemyDeathSystem.start();
-    console.log("[MainScene] EnemyDeathSystem started — enemies will be removed on defeat");
 
-    // Debug: log combat events for troubleshooting
-    eventBus.on("COMBAT_RESOLVED", (event) => {
-      console.log(`[MainScene][Combat] COMBAT_RESOLVED — target: ${event.target.getName()} (id=${event.target.getId()}), damage: ${event.damage}, remainingHP: ${event.remainingHealth}`);
-    });
-    eventBus.on("ENEMY_DEFEATED", (event) => {
-      console.log(`[MainScene][Combat] ENEMY_DEFEATED — enemy: ${event.enemy.getName()} (id=${event.enemy.getId()})`);
-    });
+    this.enemyCombatSystem = new EnemyCombatSystem();
+    this.enemyCombatSystem.start();
 
     // Clean up defeated enemies from tracking arrays after the death system removes them.
+
     eventBus.on("ENEMY_REMOVED", (event) => {
       const removedEnemy = event.enemy;
-      const enemyId = removedEnemy.getId();
-      console.log(`[MainScene] ENEMY_REMOVED — removing enemy id=${enemyId} from tracking arrays`);
 
       // Remove from enemies array
       const enemyIndex = this.enemies.indexOf(removedEnemy);
@@ -531,6 +526,9 @@ export class MainScene extends Phaser.Scene {
         const chaseController = new ChaseController(enemy, this.player);
         this.chaseControllers.push(chaseController);
 
+        const enemyAttackController = new EnemyAttackController(enemy,this.player);
+        this.enemyAttackController.push(enemyAttackController);
+
         // Initialize return behavior for the spawned enemy
         const returnController = new ReturnController(enemy, spawnX, spawnY, patrolController);
         this.returnControllers.push(returnController);
@@ -548,10 +546,10 @@ export class MainScene extends Phaser.Scene {
             patrolController.deactivate();
           }
         });
+
+        chaseController.onChaseChange(enemyAttackController.handleChaseEvent.bind(enemyAttackController))
       }
     }
-
-    console.log(`[MainScene] Spawned ${this.enemies.length} enemies`);
   }
 
   /**
@@ -566,7 +564,6 @@ export class MainScene extends Phaser.Scene {
   private spawnNpcsFromBackend(npcData: NpcDto[]): void {
     npcSpawnManager.spawnNpcs(this, this.map, npcData);
     this.npcs = npcSpawnManager.getSpawnedNpcs();
-    console.log(`[MainScene] Spawned ${this.npcs.length} NPCs`);
     this.initNpcInteraction();
   }
 
@@ -833,6 +830,10 @@ export class MainScene extends Phaser.Scene {
       controller.update(delta);
     }
 
+    for(const controller of this.enemyAttackController){
+      controller.update(delta);
+    }
+
     // Update all return controllers independently.
     // Each controller manages return-to-spawn behavior for a single enemy.
     // MainScene only invokes the update — no return logic lives here.
@@ -844,7 +845,7 @@ export class MainScene extends Phaser.Scene {
     this.hudManager.update();
 
     // Update attack system (checks spacebar input)
-    this.playerAttackSystem.update(_time, delta);
+    this.playerAttackSystem.update();
 
     // Update cooldown indicator position and visibility
     this.cooldownIndicator.update();

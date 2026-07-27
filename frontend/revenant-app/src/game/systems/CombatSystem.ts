@@ -10,7 +10,7 @@ import type { Enemy } from "@/game/entities/characters/Enemy";
  *
  * Used only if no strongPoints value is provided to the constructor.
  */
-const DEFAULT_PLAYER_ATTACK = 10;
+const DEFAULT_PLAYER_ATTACK = 80;
 
 /**
  * CombatSystem — central combat engine.
@@ -33,6 +33,8 @@ export class CombatSystem {
   private readonly defeatedSet: Set<Enemy>;
   private readonly handleAttackRequest: (request: AttackRequest) => void;
   private playerAttackPoints: number;
+  private playerExperience= 0;
+  private gold=100;
 
   /**
    * Creates the CombatSystem.
@@ -40,7 +42,7 @@ export class CombatSystem {
    * @param playerAttackPoints - The player's strongPoints from the login response.
    *                             Determines damage dealt to enemies.
    */
-  constructor(playerAttackPoints?: number) {
+  constructor(playerAttackPoints?: number, playerExperience=0,gold=100) {
     this.damageCalculator = new DamageCalculator();
     this.healthMap = new Map();
     this.defeatedSet = new Set();
@@ -48,6 +50,8 @@ export class CombatSystem {
     this.handleAttackRequest = (request: AttackRequest) => {
       this.resolveAttack(request);
     };
+    this.playerExperience=playerExperience;
+    this.gold=gold;
   }
 
   /**
@@ -146,8 +150,6 @@ export class CombatSystem {
     // Calculate damage
     const attackValue = this.playerAttackPoints;
     const armorValue = stats.armorPoints;
-    console.log(`[CombatSystem] Calculating damage: attack=${attackValue}, armor=${armorValue}, formula: max(0, ${attackValue} - ${armorValue}) = ${Math.max(0, attackValue - armorValue)}`);
-
     let damageCalc;
     try {
       damageCalc = this.damageCalculator.calculate(attackValue, armorValue);
@@ -191,6 +193,14 @@ export class CombatSystem {
         attacker: request.attacker,
       };
       eventBus.emit("ENEMY_DEFEATED", enemyDefeatedEvent);
+      const enemyExperience = target.getStats().xpReward;
+      this.playerExperience+=enemyExperience;
+      const goldReward=target.getStats().goldReward;
+      this.gold+=goldReward;
+      eventBus.emit("PLAYER_STATS_UPDATED",{experience:this.playerExperience,gold:this.gold})
+      if(this.playerExperience>=100){
+        eventBus.emit("PLAYER_STATS_UPDATED",{level:2});
+      }
     }
 
     return result;

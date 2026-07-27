@@ -1,12 +1,16 @@
 import { Enemy } from "@/game/entities/characters/Enemy";
 import { Player } from "@/game/entities/characters/Player";
-import type { DetectionEvent } from "@/game/systems/DetectionController";
+import type { DetectionEvent} from "@/game/systems/DetectionController";
 import type { EnemyDirection } from "@/game/services/EnemyAnimationRegistrar";
 
 /**
  * Chase state representing whether the enemy is currently pursuing the player.
  */
-export type ChaseState = "Inactive" | "Chasing";
+export type ChaseState = "Inactive" | "Chasing" | "InAttackRange";
+
+export type ChaseEvent = "ChaseStarted" | "AttackRangeReached" | "ChaseStopped" | "AttackRangeLost";
+
+export type ChaseListener = (event : ChaseEvent) => void;
 
 /**
  * Represents the player's current world position used as the chase target.
@@ -57,6 +61,8 @@ export class ChaseController {
   private readonly chaseSpeed: number;
   private chaseState: ChaseState;
   private chaseTarget: ChaseTarget | null;
+  private readonly listeners: ChaseListener[];
+
 
   /**
    * Creates a ChaseController for the given enemy.
@@ -91,6 +97,7 @@ export class ChaseController {
     // Always begin in the Inactive state (Requirement 1.1 — pursuit starts only after detection)
     this.chaseState = "Inactive";
     this.chaseTarget = null;
+    this.listeners=[];
   }
 
   /**
@@ -194,6 +201,9 @@ export class ChaseController {
     this.chaseTarget = { targetX: playerX, targetY: playerY };
 
     // Move toward the chase target
+    if(this.chaseState !== "Chasing"){
+      return
+    }
     this.moveTowardTarget(delta);
   }
 
@@ -228,6 +238,8 @@ export class ChaseController {
     // If within arrival threshold, stop and idle
     if (distance <= CHASE_ARRIVAL_THRESHOLD) {
       this.enemy.setState("idle");
+      this.chaseState ="InAttackRange";
+      this.notifyListeners("AttackRangeReached");
       return;
     }
 
@@ -306,6 +318,7 @@ export class ChaseController {
     }
 
     this.chaseState = "Chasing";
+    this.notifyListeners("ChaseStarted");
     this.chaseTarget = { targetX: playerX, targetY: playerY };
 
     // Synchronize with Enemy Animation: enter walking state (Requirement 3.4)
@@ -330,9 +343,29 @@ export class ChaseController {
     }
 
     this.chaseState = "Inactive";
+    this.notifyListeners("AttackRangeLost");
+
     this.chaseTarget = null;
 
     // Synchronize with Enemy Animation: return to idle state (Requirement 4.2)
     this.enemy.setState("idle");
+  }
+
+  onChaseChange(listener:ChaseListener):void{
+    this.listeners.push(listener);
+  }
+
+  offChaseChange(listener:ChaseListener):void{
+    const index = this.listeners.indexOf(listener);
+    if(index !==-1){
+      this.listeners.splice(index,1);
+    }
+  }
+
+  private notifyListeners(event:ChaseEvent):void{
+
+    for(const listener of this.listeners){
+      listener(event);
+    }
   }
 }

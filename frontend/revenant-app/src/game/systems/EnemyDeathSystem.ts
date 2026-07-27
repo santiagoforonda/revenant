@@ -194,9 +194,6 @@ export class EnemyDeathSystem {
 
       enemy.disable();
 
-      console.log(
-        `[EnemyDeathSystem] Enemy "${enemy.getName()}" behavior disabled.`
-      );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(
@@ -229,17 +226,8 @@ export class EnemyDeathSystem {
       const animationKey = `${enemy.getEnemyType()}-death`;
 
       const controller = new DeathAnimationController(sprite, animationKey);
-      const result = await controller.playDeath();
+      await controller.playDeath();
 
-      if (result.completed) {
-        console.log(
-          `[EnemyDeathSystem] Death animation completed for enemy "${enemy.getName()}" (${result.duration}ms).`
-        );
-      } else {
-        console.warn(
-          `[EnemyDeathSystem] Death animation did not complete for enemy "${enemy.getName()}". Proceeding with removal.`
-        );
-      }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(
@@ -271,9 +259,6 @@ export class EnemyDeathSystem {
 
       enemy.destroy();
 
-      console.log(
-        `[EnemyDeathSystem] Enemy "${enemy.getName()}" removed from scene.`
-      );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(
@@ -304,9 +289,6 @@ export class EnemyDeathSystem {
     eventBus.emit("ENEMY_REMOVED", removedEvent);
     this.removedEnemies.add(enemy);
 
-    console.log(
-      `[EnemyDeathSystem] ENEMY_REMOVED event published for enemy "${enemy.getName()}".`
-    );
   }
 
   /**

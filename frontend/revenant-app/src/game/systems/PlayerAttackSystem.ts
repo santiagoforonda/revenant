@@ -12,7 +12,7 @@ import type { PlayerDirection } from "@/game/services/SpriteComposer";
  * PlayerAttackSystem coordinates the complete player attack workflow.
  *
  * Responsibilities:
- * - Listen for left mouse button input.
+ * - Listen for space button input.
  * - Validate attack cooldown via AttackState.
  * - Validate player attack state (not already attacking).
  * - Determine the attack direction from the Player's current facing direction.
@@ -75,7 +75,7 @@ export class PlayerAttackSystem {
    * @param _time - The current game time in milliseconds.
    * @param _delta - The time elapsed since the last frame in milliseconds.
    */
-  update(_time: number, _delta: number): void {
+  update(): void {
     if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.attemptAttack();
     }
@@ -295,7 +295,6 @@ export class PlayerAttackSystem {
   private attemptAttack(): void {
     const currentTime = this.scene.time.now;
 
-    console.log("[PlayerAttackSystem] Left-click detected — attempting attack");
 
     // Validate attack cooldown and state via AttackState
     if (!this.attackState.canAttack(currentTime)) {
@@ -320,7 +319,6 @@ export class PlayerAttackSystem {
 
     // Detect targets inside the attack hitbox
     const targets = this.detectTargets(direction);
-    console.log(`[PlayerAttackSystem] Attack direction: ${direction}, targets found: ${targets.length}`);
 
     // Generate the AttackRequest (empty targets is valid — no enemy detected case)
     const attackRequest: AttackRequest = {

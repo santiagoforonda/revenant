@@ -6,7 +6,7 @@ import { assetLoaderService } from "@/game/services/AssetLoaderService";
 /**
  * Supported enemy animation states.
  */
-export type EnemyAnimationState = "idle" | "walking";
+export type EnemyAnimationState = "idle" | "walking" | "attacking";
 
 /**
  * Supported facing directions for enemies.
@@ -46,6 +46,31 @@ const SKELETON_DIRECTION_FRAMES: Record<EnemyDirection, { start: number; end: nu
   right: { start: 11 * SKELETON_COLS_PER_ROW, end: 11 * SKELETON_COLS_PER_ROW + 8, idle: 11 * SKELETON_COLS_PER_ROW },
 };
 
+
+const SKELETON_ATTACK_FRAMES: Record<
+    EnemyDirection,
+    { start: number; end: number }
+> = {
+    up: {
+        start: 12 * SKELETON_COLS_PER_ROW,
+        end:   12 * SKELETON_COLS_PER_ROW + 5,
+    },
+    left: {
+        start: 13 * SKELETON_COLS_PER_ROW,
+        end:   13 * SKELETON_COLS_PER_ROW + 5,
+    },
+    down: {
+        start: 14 * SKELETON_COLS_PER_ROW,
+        end:   14 * SKELETON_COLS_PER_ROW + 5,
+    },
+    right: {
+        start: 15 * SKELETON_COLS_PER_ROW,
+        end:   15 * SKELETON_COLS_PER_ROW + 5,
+    },
+};
+
+const MINOTAUR_ATTACK_FRAMES = SKELETON_ATTACK_FRAMES;
+const WOLF_ATTACK_FRAMES = SKELETON_ATTACK_FRAMES;
 /**
  * Death animation frames for the Skeleton.
  * Row 20 of the skeleton spritesheet (13 columns per row).
@@ -211,6 +236,8 @@ class EnemyAnimationRegistrarImpl implements EnemyAnimationRegistrarInterface {
     // Register death animation if available for this enemy type
     this.registerDeathAnimation(scene.anims, config);
 
+    this.registerAttackAnimation(scene.anims,config);
+
     return true;
   }
 
@@ -243,8 +270,16 @@ class EnemyAnimationRegistrarImpl implements EnemyAnimationRegistrarInterface {
     state: EnemyAnimationState,
     direction: EnemyDirection
   ): string {
-    const stateKey = state === "walking" ? "walk" : "idle";
-    return `${enemyType}-${stateKey}-${direction}`;
+    switch (state) {
+    case "walking":
+        return `${enemyType}-walk-${direction}`;
+
+    case "attacking":
+        return `${enemyType}-attack-${direction}`;
+
+    default:
+        return `${enemyType}-idle-${direction}`;
+    }
   }
 
   /**
@@ -338,6 +373,41 @@ class EnemyAnimationRegistrarImpl implements EnemyAnimationRegistrarInterface {
     });
   }
 
+  private registerAttackAnimation(
+    anims: Phaser.Animations.AnimationManager,
+    config: EnemySpriteConfig
+): void {
+
+    const textureKey = config.textureKey;
+
+    const frameData = this.getAttackFrameDataForEnemy(config.enemyType);
+
+    if (!frameData) {
+        return;
+    }
+
+    for (const direction of DIRECTIONS) {
+
+        const frames = frameData[direction];
+
+        const attackKey = `${config.enemyType}-attack-${direction}`;
+
+        if (anims.exists(attackKey)) {
+            continue;
+        }
+
+        anims.create({
+            key: attackKey,
+            frames: anims.generateFrameNumbers(textureKey, {
+                start: frames.start,
+                end: frames.end,
+            }),
+            frameRate: 8,
+            repeat: 0,
+        });
+    }
+}
+
   /**
    * Returns the death animation frame range for the given enemy type,
    * or null if no death animation is defined.
@@ -358,6 +428,26 @@ class EnemyAnimationRegistrarImpl implements EnemyAnimationRegistrarInterface {
         return null;
     }
   }
+
+  private getAttackFrameDataForEnemy(enemyType: EnemyType): Record<EnemyDirection, { start: number; end: number }> | null {
+
+    switch (enemyType) {
+
+        case EnemyType.Skeleton:
+            return SKELETON_ATTACK_FRAMES;
+
+        case EnemyType.Minotaur:
+            return MINOTAUR_ATTACK_FRAMES;
+
+        case EnemyType.Wolf:
+            return WOLF_ATTACK_FRAMES;
+
+        default:
+            return null;
+    }
+  }
+
+
 }
 
 /** Singleton instance of the EnemyAnimationRegistrar */

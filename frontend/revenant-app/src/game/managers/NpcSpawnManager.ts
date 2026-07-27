@@ -59,8 +59,6 @@ class NpcSpawnManager {
     }
 
     // Process each spawn point with resilient error handling
-    let skipped = 0;
-    const totalSpawnPoints = spawnPoints.length;
 
     for (const spawnPoint of spawnPoints) {
       try {
@@ -70,7 +68,6 @@ class NpcSpawnManager {
           console.warn(
             `[NpcSpawnManager] Spawn point at (${spawnPoint.x}, ${spawnPoint.y}) references npcId=${spawnPoint.npcId} but no matching backend NPC exists. Skipping.`
           );
-          skipped++;
           continue;
         }
 
@@ -84,7 +81,7 @@ class NpcSpawnManager {
         if (!npc) {
           // Factory returned null (unsupported NPC type or creation failure).
           // NpcFactory already logs its own warning.
-          skipped++;
+        
           continue;
         }
 
@@ -94,15 +91,10 @@ class NpcSpawnManager {
         console.error(
           `[NpcSpawnManager] Unexpected error spawning NPC at (${spawnPoint.x}, ${spawnPoint.y}) npcId=${spawnPoint.npcId}: ${errorMessage}`
         );
-        skipped++;
       }
     }
 
-    // Log spawn summary
-    const spawned = this.spawnedNpcs.length;
-    console.log(
-      `[NpcSpawnManager] Spawned ${spawned}/${totalSpawnPoints} NPCs (${skipped} skipped)`
-    );
+    
   }
 
   /**

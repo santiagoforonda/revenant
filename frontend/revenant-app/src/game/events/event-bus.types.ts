@@ -4,6 +4,7 @@ import type { NpcDto } from "../interfaces/NpcResponse";
 import type { AttackRequest } from "../interfaces/AttackRequest";
 import type { CombatResolvedEvent, EnemyDefeatedEvent } from "../interfaces/CombatEvents";
 import type { EnemyRemovedEvent } from "../interfaces/EnemyRemovedEvent";
+import type { EnemmyAttackRequest } from "../interfaces/EnemmyAttackRequest";
 
 export type ApiErrorPayload = {
   statusCode: number;
@@ -48,6 +49,7 @@ export type EventBusMap = {
   COMBAT_RESOLVED: CombatResolvedEvent;
   ENEMY_DEFEATED: EnemyDefeatedEvent;
   ENEMY_REMOVED: EnemyRemovedEvent;
+  ENEMY_ATTACK_REQUEST: EnemmyAttackRequest;
 };
 
 export type EventName = keyof EventBusMap;

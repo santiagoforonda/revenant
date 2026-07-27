@@ -6,6 +6,7 @@ import {
 import { assetLoaderService } from "@/game/services/AssetLoaderService";
 import { DefaultSpriteComposer } from "@/game/services/SpriteComposer";
 import { Player } from "@/game/entities/characters/Player";
+import type { LoginResponse } from "@/auth";
 
 /**
  * Options accepted by the PlayerFactory when creating a Player entity.
@@ -40,7 +41,7 @@ class PlayerFactoryImpl {
    * @param options - Factory options including scene, position, and optional class.
    * @returns A fully configured Player entity.
    */
-  create(options: PlayerFactoryOptions): Player {
+  create(options: PlayerFactoryOptions,stats:LoginResponse): Player {
     const { scene, x, y } = options;
     const resolvedClass = this.resolvePlayerClass(options.playerClass);
     const config = CLASS_SPRITE_REGISTRY[resolvedClass];
@@ -56,7 +57,7 @@ class PlayerFactoryImpl {
     // Register animations for this class (idempotent)
     this.spriteComposer.registerAnimations(scene, config);
 
-    return new Player(scene, x, y, config);
+    return new Player(scene, x, y, config,stats);
   }
 
   /**

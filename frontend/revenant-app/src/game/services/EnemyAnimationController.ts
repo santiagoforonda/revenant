@@ -4,7 +4,7 @@ import { enemyAnimationRegistrar } from "@/game/services/EnemyAnimationRegistrar
 import type { EnemyAnimationState, EnemyDirection } from "@/game/services/EnemyAnimationRegistrar";
 
 /** Valid animation states for validation */
-const VALID_STATES: ReadonlySet<EnemyAnimationState> = new Set(["idle", "walking"]);
+const VALID_STATES: ReadonlySet<EnemyAnimationState> = new Set(["idle", "walking","attacking"]);
 
 /** Valid facing directions for validation */
 const VALID_DIRECTIONS: ReadonlySet<EnemyDirection> = new Set(["up", "down", "left", "right"]);
@@ -61,6 +61,7 @@ export class EnemyAnimationController implements EnemyAnimationControllerInterfa
   private readonly sprite: Phaser.GameObjects.Sprite;
   private readonly enemyType: EnemyType;
   private currentAnimationKey: string = "";
+  private lastDirection: EnemyDirection = "down";
 
   /**
    * Creates an EnemyAnimationController for a specific sprite and enemy type.
@@ -71,7 +72,24 @@ export class EnemyAnimationController implements EnemyAnimationControllerInterfa
   constructor(sprite: Phaser.GameObjects.Sprite, enemyType: EnemyType) {
     this.sprite = sprite;
     this.enemyType = enemyType;
+    this.sprite.on(
+    Phaser.Animations.Events.ANIMATION_COMPLETE,
+    this.handleAnimationComplete,
+    this
+);
   }
+
+  private handleAnimationComplete(
+    animation: Phaser.Animations.Animation
+): void {
+
+    if (!animation.key.includes("-attack-")) {
+        return;
+    }
+
+    this.update("idle", this.lastDirection);
+
+}
 
   /**
    * Updates the animation based on the given state and direction.
@@ -87,6 +105,12 @@ export class EnemyAnimationController implements EnemyAnimationControllerInterfa
    * the playback request is silently ignored.
    */
   update(state: EnemyAnimationState, direction: EnemyDirection): void {
+
+    if(!this.sprite.active){
+      return;
+    }
+    this.lastDirection = direction;
+
     // Validate state — keep current animation if invalid
     if (!VALID_STATES.has(state)) {
       return;

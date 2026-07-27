@@ -1,4 +1,5 @@
 import type { DamageCalculation } from "@/game/interfaces/DamageCalculation";
+import type { DamageCalculationPLayer } from "../interfaces/DamageCalculationPlayer";
 
 /**
  * DamageCalculator — calculates the final damage dealt to a target.
@@ -33,5 +34,15 @@ export class DamageCalculator {
       armor,
       finalDamage,
     };
+  }
+
+  calculateDamageToPlayer(attack:number,health:number):DamageCalculationPLayer{
+    const finalDamage = attack;
+    const healthReaming = health-finalDamage;
+    return{
+      attack,
+      health:healthReaming,
+      finalDamage,
+    }
   }
 }

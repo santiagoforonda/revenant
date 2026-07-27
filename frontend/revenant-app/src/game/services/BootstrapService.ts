@@ -24,13 +24,11 @@ class BootstrapService {
    */
   async initialize(userData: LoginResponse): Promise<void> {
     try {
-      console.log("[BootstrapService] Bootstrap started for user:", userData.username);
 
       // Fetch NPC data for the user's current map and emit through Event Bus.
       // NPCs are non-critical — failure is logged but does not block bootstrap.
       await this.loadNpcs(userData.mapId);
 
-      console.log("[BootstrapService] Bootstrap completed successfully");
       eventBus.emit("GAME_READY");
     } catch (error: unknown) {
       const errorPayload: ApiErrorPayload = {
@@ -56,12 +54,7 @@ class BootstrapService {
 
     if (npcs && npcs.length > 0) {
       eventBus.emit("NPC_DATA_LOADED", npcs);
-      console.log(`[BootstrapService] Emitted NPC_DATA_LOADED with ${npcs.length} NPCs`);
-    } else if (npcs && npcs.length === 0) {
-      console.log("[BootstrapService] No NPCs found for current map");
-    } else {
-      console.warn("[BootstrapService] Failed to load NPC data, continuing without NPCs");
-    }
+    } 
   }
 }
 
