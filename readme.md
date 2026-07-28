@@ -29,10 +29,6 @@ Ahora el viejo caballero tiene una sola oportunidad: **ganarse el perdón por su
 ## Mecánicas de juego
 
 - **Atacar** — Combate directo con armas cuerpo a cuerpo y de distancia.
-- **Defenderse** — Bloquea ataques enemigos con escudo para reducir el daño recibido.
-- **Recoger** — Obtén ítems del mundo: armas, armaduras, consumibles y objetos clave.
-- **Equipar / Quitar** — Gestiona tu equipamiento según la situación de combate.
-- **Comprar** — Adquiere ítems en las tiendas de los puntos seguros.
 - **Hablar** — Interactúa con NPCs para obtener pistas del lore, misiones y objetos especiales.
 
 ---
