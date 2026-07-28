@@ -11,7 +11,7 @@ import { ENEMY_SPRITE_REGISTRY } from "@/game/config/EnemySpriteRegistry";
 import type { EnemyType, EnemySpriteConfig } from "@/game/config/EnemySpriteRegistry";
 
 /** Base path for all class sprite assets */
-const ASSETS_BASE = "/src/assets/characters/classes";
+const ASSETS_BASE = "/assets/characters/classes";
 
 /** Directions used for directional helmet loading */
 const HELMET_DIRECTIONS = ["n", "s", "e", "w"] as const;
