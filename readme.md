@@ -7,7 +7,7 @@
 ## ¿Qué es Revenant?
 
 **Revenant** es un videojuego RPG-Metroidvania singleplayer en 2D con perspectiva superior (Top-Down), fuertemente inspirado en la saga **Dark Souls**. Un mundo oscuro, desafiante y lleno de secretos donde cada decisión tiene peso y cada enemigo puede ser el último.
-
+esta orientado a jugadores de PC NO mobile
 ---
 
 ## Sinopsis
