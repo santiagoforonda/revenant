@@ -1,30 +1,30 @@
-# ===========================
-# Etapa 1: Compilación
-# ===========================
+# ==========================
+# Etapa 1 - Compilación
+# ==========================
 FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
 
-# Copiar wrapper y pom
+# Copiar archivos de Maven
 COPY .mvn .mvn
 COPY mvnw .
 COPY pom.xml .
 
-# Dar permisos al wrapper
+# Permiso de ejecución al wrapper
 RUN chmod +x mvnw
 
 # Descargar dependencias
 RUN ./mvnw dependency:go-offline
 
-# Copiar código fuente
+# Copiar el código fuente
 COPY src src
 
-# Compilar
+# Compilar la aplicación
 RUN ./mvnw clean package -DskipTests
 
-# ===========================
-# Etapa 2: Ejecución
-# ===========================
+# ==========================
+# Etapa 2 - Runtime
+# ==========================
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
@@ -33,4 +33,4 @@ COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-Dserver.port=${PORT:-8080}", "-jar", "app.jar"]
