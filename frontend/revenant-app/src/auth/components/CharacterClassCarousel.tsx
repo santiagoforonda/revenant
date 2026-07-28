@@ -3,10 +3,10 @@ import { GiPointySword } from "react-icons/gi";
 import { useCarousel } from "../hooks/useCarousel";
 import { useReducedMotion } from "@/auth/hooks/useReducedMotion";
 
-import knightImg from "../../assets/characters/knight.png";
-import magoImg from "../../assets/characters/mago.png";
-import gladiadorImg from "../../assets/characters/gladiador.png";
-import espadacinImg from "../../assets/characters/espadachin.png";
+import knightImg from "/assets/characters/knight.png";
+import magoImg from "/assets/characters/mago.png";
+import gladiadorImg from "/assets/characters/gladiador.png";
+import espadacinImg from "/assets/characters/espadachin.png";
 
 type CharacterClass = {
   id: string;
