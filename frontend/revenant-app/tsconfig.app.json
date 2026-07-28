@@ -26,7 +26,7 @@
       ]
     }
   },
-  "include": ["src"],
+  "include": ["src", "public/assets"],
   "exclude": [
     "src/**/*.test.ts",
     "src/**/__tests__/**"

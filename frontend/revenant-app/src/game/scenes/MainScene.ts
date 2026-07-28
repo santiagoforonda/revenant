@@ -53,8 +53,8 @@ import { EnemyCombatSystem } from "../systems/EnemyCombatSystem";
  */
 
 /** Base path for world1 assets */
-const IMAGES_BASE = "/src/assets/images/world1";
-const MAPS_BASE = "/src/assets/maps/world1";
+const IMAGES_BASE = "/assets/images/world1";
+const MAPS_BASE = "/assets/maps/world1";
 
 /** Constant movement speed in pixels per second */
 const PLAYER_SPEED = 120;
@@ -163,11 +163,11 @@ export class MainScene extends Phaser.Scene {
     assetLoaderService.preloadEnemySpritesheet(this, EnemyType.Minotaur);
 
     // Load NPC sprites (static images for idle NPCs)
-    this.load.image("sea_maid", "/src/assets/characters/classes/npc/world_one/sea_maid.png");
-    this.load.image("traveling_merchant", "/src/assets/characters/classes/npc/world_one/traveling_merchant.png");
-    this.load.image("old_hermit", "/src/assets/characters/classes/npc/world_one/old_hermit.png");
-    this.load.image("forest_healer", "/src/assets/characters/classes/npc/world_one/forest_healer.png");
-    this.load.image("guard", "/src/assets/characters/classes/npc/world_one/guard.png");
+    this.load.image("sea_maid", "/assets/characters/classes/npc/world_one/sea_maid.png");
+    this.load.image("traveling_merchant", "/assets/characters/classes/npc/world_one/traveling_merchant.png");
+    this.load.image("old_hermit", "/assets/characters/classes/npc/world_one/old_hermit.png");
+    this.load.image("forest_healer", "/assets/characters/classes/npc/world_one/forest_healer.png");
+    this.load.image("guard", "/assets/characters/classes/npc/world_one/guard.png");
 
     // Load the Tiled map JSON (embedded version with resolved tilesets)
     this.load.tilemapTiledJSON("map-one", `${MAPS_BASE}/map_one_embedded.json`);
@@ -615,7 +615,7 @@ export class MainScene extends Phaser.Scene {
     // Load the shared body spritesheet (used by all classes)
     this.load.spritesheet(
       SHARED_BODY_KEY,
-      "/src/assets/characters/classes/knight/body/body.png",
+      "/assets/characters/classes/knight/body/body.png",
       { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
     );
 
@@ -624,7 +624,7 @@ export class MainScene extends Phaser.Scene {
     const attackKey = `${classId}-body-attack`;
     this.load.spritesheet(
       attackKey,
-      `/src/assets/characters/classes/${classId}/body/body_attack.png`,
+      `/assets/characters/classes/${classId}/body/body_attack.png`,
       { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
     );
 
@@ -633,29 +633,29 @@ export class MainScene extends Phaser.Scene {
     if (playerClass === PlayerClass.Gladiador) {
       this.load.spritesheet(
         "gladiador-weapon-attack",
-        "/src/assets/characters/classes/gladiador/weapon/Slash.png",
+        "/assets/characters/classes/gladiador/weapon/Slash.png",
         { frameWidth: 192, frameHeight: 192 }
       );
       // Load attack spritesheets for feet, legs, torso (all 384x256, 64x64 frames, 6 cols × 4 rows)
       this.load.spritesheet(
         "gladiador-feet-attack",
-        "/src/assets/characters/classes/gladiador/feet/feets_slash.png",
+        "/assets/characters/classes/gladiador/feet/feets_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       this.load.spritesheet(
         "gladiador-legs-attack",
-        "/src/assets/characters/classes/gladiador/legs/legs_slash.png",
+        "/assets/characters/classes/gladiador/legs/legs_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       this.load.spritesheet(
         "gladiador-torso-attack",
-        "/src/assets/characters/classes/gladiador/torso/torso_slash.png",
+        "/assets/characters/classes/gladiador/torso/torso_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       // Helmet slash: 384x256, 64x64 frames (6 cols × 4 rows)
       this.load.spritesheet(
         "gladiador-helmet-attack",
-        "/src/assets/characters/classes/gladiador/helmet/helmet_slash.png",
+        "/assets/characters/classes/gladiador/helmet/helmet_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
     }
@@ -665,13 +665,13 @@ export class MainScene extends Phaser.Scene {
       // Weapon Slash.png: 768x512, 128x128 frames (6 cols × 4 rows)
       this.load.spritesheet(
         "espadachin-weapon-attack",
-        "/src/assets/characters/classes/espadachin/weapon/Slash.png",
+        "/assets/characters/classes/espadachin/weapon/Slash.png",
         { frameWidth: 128, frameHeight: 128 }
       );
       // Feet slash: 384x256, 64x64 frames (6 cols × 4 rows)
       this.load.spritesheet(
         "espadachin-feet-attack",
-        "/src/assets/characters/classes/espadachin/feet/feets_slash.png",
+        "/assets/characters/classes/espadachin/feet/feets_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       // Legs and torso attack frames are in rows 12-15 of the same legs.png/torso.png
@@ -684,29 +684,29 @@ export class MainScene extends Phaser.Scene {
       // Weapon Slash.png: 1536x768, 192x192 frames (8 cols × 4 rows)
       this.load.spritesheet(
         "mago-weapon-attack",
-        "/src/assets/characters/classes/mago/weapon/Slash.png",
+        "/assets/characters/classes/mago/weapon/Slash.png",
         { frameWidth: 192, frameHeight: 192 }
       );
       // Feet, helmet, torso slash: 512x256, 64x64 frames (8 cols × 4 rows)
       this.load.spritesheet(
         "mago-feet-attack",
-        "/src/assets/characters/classes/mago/feet/feets_slash.png",
+        "/assets/characters/classes/mago/feet/feets_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       this.load.spritesheet(
         "mago-helmet-attack",
-        "/src/assets/characters/classes/mago/helmet/helmet_slash.png",
+        "/assets/characters/classes/mago/helmet/helmet_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       // Note: legs slash file is misnamed "helmet_slash.png" inside the legs folder
       this.load.spritesheet(
         "mago-legs-attack",
-        "/src/assets/characters/classes/mago/legs/helmet_slash.png",
+        "/assets/characters/classes/mago/legs/helmet_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       this.load.spritesheet(
         "mago-torso-attack",
-        "/src/assets/characters/classes/mago/torso/torso_slash.png",
+        "/assets/characters/classes/mago/torso/torso_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
     }
@@ -716,29 +716,29 @@ export class MainScene extends Phaser.Scene {
       // Weapon Slash.png: 768x512, 128x128 frames (6 cols × 4 rows)
       this.load.spritesheet(
         "knight-weapon-attack",
-        "/src/assets/characters/classes/knight/weapon/Slash.png",
+        "/assets/characters/classes/knight/weapon/Slash.png",
         { frameWidth: 128, frameHeight: 128 }
       );
       // Feet, legs, torso slash: all 384x256, 64x64 frames (6 cols × 4 rows)
       this.load.spritesheet(
         "knight-feet-attack",
-        "/src/assets/characters/classes/knight/feet/feets_slash.png",
+        "/assets/characters/classes/knight/feet/feets_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       this.load.spritesheet(
         "knight-legs-attack",
-        "/src/assets/characters/classes/knight/legs/legs_slash.png",
+        "/assets/characters/classes/knight/legs/legs_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       this.load.spritesheet(
         "knight-torso-attack",
-        "/src/assets/characters/classes/knight/torso/torso_slash.png",
+        "/assets/characters/classes/knight/torso/torso_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
       // Helmet slash: 384x256, 64x64 frames (6 cols × 4 rows)
       this.load.spritesheet(
         "knight-helmet-attack",
-        "/src/assets/characters/classes/knight/helmet/helmet_slash.png",
+        "/assets/characters/classes/knight/helmet/helmet_slash.png",
         { frameWidth: FRAME_WIDTH, frameHeight: FRAME_HEIGHT }
       );
     }
@@ -762,7 +762,7 @@ export class MainScene extends Phaser.Scene {
     if (helmetKey !== null) {
       const classId = playerClass as string;
       if (config.helmetType === "directional") {
-        const basePath = `/src/assets/characters/classes/${classId}/helmet`;
+        const basePath = `/assets/characters/classes/${classId}/helmet`;
         this.load.image(`${helmetKey}-s`, `${basePath}/s.png`);
         this.load.image(`${helmetKey}-n`, `${basePath}/n.png`);
         this.load.image(`${helmetKey}-e`, `${basePath}/e.png`);
