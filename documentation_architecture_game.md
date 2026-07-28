@@ -79,4 +79,4 @@ El desarrollo avanza en sesiones separadas, cada una enfocada en una etapa:
 | 2 | Creación de la base de datos (scripts SQL) | ✅ Cerrado | `schema.sql` (DDL completo) y `seed.sql` (catálogo con kits de equipo inicial por clase) generados. Ver `documentation_database_game.md` |
 | 3 | Backend (Spring Boot, vía SDD/Kiro) | ✅ Cerrado | Empieza con la fase de requerimientos en Kiro |
 | 4 | Frontend (React + TS + Phaser, vía SDD/Kiro) | ✅ Cerrado | Ya existe una base de integración React↔Phaser explorada previamente con Gemini |
-| 5 | Despliegue | ✅ Cerrado | Redner |
+| 5 | Despliegue | ✅ Cerrado | Render |
