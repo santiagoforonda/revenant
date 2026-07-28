@@ -16,7 +16,7 @@ public class CorsConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173","https://revenant-fnjv.onrender.com"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173","https://revenant-1.onrender.com","https://revenant-fnjv.onrender.com"));
 
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 
